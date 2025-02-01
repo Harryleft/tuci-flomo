@@ -7,31 +7,64 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>AI 单词学习助手</h1>
-    </div>
-    
-    <div class="word-input">
-      <input type="text" id="wordInput" placeholder="输入或粘贴单词">
-      <button id="captureBtn">记录</button>
+      <div class="logo">
+        <span>🎯 图词Flomo</span> 🌲
+      </div>
+      <div class="actions-top">
+        <button id="settingsBtn" class="icon-button">⚙️</button>
+        <button id="closeBtn" class="icon-button">✕</button>
+      </div>
     </div>
 
     <div class="content">
-      <div class="word-info" id="wordInfo">
-        <!-- 单词信息将在这里显示 -->
+      <div class="link-section">
+        <img src="link.svg" alt="link" class="link-icon">
+        <span>标题和链接</span>
       </div>
       
-      <div class="scene-description" id="sceneDescription">
-        <!-- AI 生成的场景描述将在这里显示 -->
+      <input type="text" id="wordInput" class="title-input" placeholder="输入要记忆的单词...">
+      <input type="text" id="linkInput" class="link-input" placeholder="https://..." disabled>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="word">📝 单词</div>
+        <div class="tab" data-tab="description">🤖 AI描述</div>
+        <div class="tab" data-tab="image">🎨 图像化</div>
       </div>
-      
-      <div class="image-container" id="imageContainer">
-        <!-- AI 生成的图片将在这里显示 -->
+
+      <div class="tab-content">
+        <div id="wordContent" class="tab-pane active">
+          <textarea id="originalText" class="text-area" placeholder="粘贴单词的例句或上下文..."></textarea>
+        </div>
+        
+        <div id="descriptionContent" class="tab-pane">
+          <div class="scene-selector">
+            <select id="sceneSelect" class="scene-select">
+              <option value="default">默认场景</option>
+              <option value="harrypotter">哈利波特</option>
+              <option value="zhenhuanchuan">甄嬛传</option>
+              <option value="custom">自定义场景...</option>
+            </select>
+            <input type="text" id="customScene" class="custom-scene" placeholder="输入自定义场景..." style="display: none;">
+          </div>
+          <div id="sceneDescription" class="scene-description">
+            <!-- AI生成的场景描述将在这里显示 -->
+          </div>
+        </div>
+
+        <div id="imageContent" class="tab-pane">
+          <div id="aiImage" class="ai-image">
+            <!-- AI生成的图片将在这里显示 -->
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="actions">
-      <button id="submitToFlomo">保存到 Flomo</button>
-      <button id="settings">设置</button>
+    <div class="footer">
+      <button id="submitBtn" class="submit-button">
+        <span class="submit-icon">📮</span>
+        <span>提交到 Flomo</span>
+        <span class="arrow">→</span>
+      </button>
     </div>
   </div>
   <script src="popup.js"></script>
