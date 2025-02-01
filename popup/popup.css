@@ -46,28 +46,13 @@ body {
   gap: 16px;
 }
 
-.link-section {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #666;
-}
-
-.link-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.title-input, .link-input {
+.title-input {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
-}
-
-.link-input {
-  color: #999;
+  margin-bottom: 16px;
 }
 
 .tabs {
