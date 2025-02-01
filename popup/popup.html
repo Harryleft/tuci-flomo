@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>AI 单词学习助手</h1>
+    </div>
+    
+    <div class="word-input">
+      <input type="text" id="wordInput" placeholder="输入或粘贴单词">
+      <button id="captureBtn">记录</button>
+    </div>
+
+    <div class="content">
+      <div class="word-info" id="wordInfo">
+        <!-- 单词信息将在这里显示 -->
+      </div>
+      
+      <div class="scene-description" id="sceneDescription">
+        <!-- AI 生成的场景描述将在这里显示 -->
+      </div>
+      
+      <div class="image-container" id="imageContainer">
+        <!-- AI 生成的图片将在这里显示 -->
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="submitToFlomo">保存到 Flomo</button>
+      <button id="settings">设置</button>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html> 
