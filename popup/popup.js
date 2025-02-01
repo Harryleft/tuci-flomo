@@ -7,8 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeBtn = document.getElementById('closeBtn');
   const settingsBtn = document.getElementById('settingsBtn');
   const tabs = document.querySelectorAll('.tab');
-  const sceneSelect = document.getElementById('sceneSelect');
-  const customScene = document.getElementById('customScene');
 
   // 标签切换
   tabs.forEach(tab => {
@@ -36,21 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 场景选择
-  sceneSelect.addEventListener('change', () => {
-    const isCustom = sceneSelect.value === 'custom';
-    customScene.style.display = isCustom ? 'block' : 'none';
-    if (!isCustom) {
-      generateDescription();
-    }
-  });
-
-  customScene.addEventListener('input', () => {
-    if (customScene.value.trim()) {
-      generateDescription();
-    }
-  });
-
   // 关闭按钮
   closeBtn.addEventListener('click', () => {
     window.close();
@@ -70,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const personalThoughts = thoughts.value.trim();
 
     if (!word) {
-      alert('请输入要记忆的单词');
+      alert('请输入单词');
       return;
     }
 
@@ -138,9 +121,15 @@ async function generateDescription() {
   const word = wordInput.value.trim();
   if (!word) return;
 
-  const scene = sceneSelect.value === 'custom' 
-    ? customScene.value.trim() 
-    : sceneSelect.value;
+  // 从存储中获取场景设置
+  const settings = await chrome.storage.sync.get({
+    selectedScene: 'default',
+    customScene: ''
+  });
+  
+  const scene = settings.selectedScene === 'custom'
+    ? settings.customScene
+    : settings.selectedScene;
 
   try {
     const description = await APIClient.generateDescription(word, scene);
