@@ -6,7 +6,8 @@
   "permissions": [
     "storage",
     "contextMenus",
-    "activeTab"
+    "activeTab",
+    "tabs"
   ],
   "host_permissions": [
     "*://*/*"
@@ -34,5 +35,6 @@
     "32": "assets/icon32.png",
     "48": "assets/icon48.png",
     "128": "assets/icon128.png"
-  }
+  },
+  "options_page": "options/options.html"
 } 
