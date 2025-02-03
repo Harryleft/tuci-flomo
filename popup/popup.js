@@ -132,29 +132,41 @@ class PopupManager {
       // 提交到 Flomo
       await APIClient.submitToFlomo(this.currentDescription);
 
-      // 显示成功提示
-      this.showSuccess('已保存到 Flomo');
+      // 显示成功状态
+      const submitStatus = document.getElementById('submitStatus');
+      submitStatus.innerHTML = `
+        <span class="success-icon">✅</span>
+        <span>已成功保存到 Flomo</span>
+      `;
+      submitStatus.className = 'submit-status success show';
 
       // 重置界面
       setTimeout(() => {
         this.wordInput.value = '';
         this.descriptionContent.innerHTML = '<div class="placeholder">输入单词并点击生成按钮，AI将为你创建生动的场景描述...</div>';
-        this.imageContent.innerHTML = '<div class="placeholder">场景描述生成后，AI将自动创建配图...</div>';
         this.currentDescription = null;
         this.submitBtn.disabled = true;
         this.submitBtn.innerHTML = `
           <span class="submit-icon">📝</span>
-          <span>保存到 Flomo</span>
+          <span>提交到 Flomo</span>
         `;
+        // 淡出成功提示
+        submitStatus.className = 'submit-status';
       }, 2000);
     } catch (error) {
       console.error('提交失败:', error);
-      this.showError(error.message || '提交失败，请重试');
+      const submitStatus = document.getElementById('submitStatus');
+      submitStatus.innerHTML = `
+        <span class="error-icon">⚠️</span>
+        <span>${error.message || '提交失败，请重试'}</span>
+      `;
+      submitStatus.className = 'submit-status error show';
+      
       // 恢复提交按钮
       this.submitBtn.disabled = false;
       this.submitBtn.innerHTML = `
         <span class="submit-icon">📝</span>
-        <span>保存到 Flomo</span>
+        <span>提交到 Flomo</span>
       `;
     }
   }

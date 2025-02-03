@@ -17,39 +17,22 @@
     </div>
 
     <div class="content">
-      <!-- 单词输入区域 -->
       <div class="word-section">
         <div class="word-input-wrapper">
-          <input type="text" id="wordInput" class="word-input" placeholder="输入单词" />
-          <button id="generateBtn" class="generate-button" title="生成">
+          <input type="text" id="wordInput" class="word-input" 
+            placeholder="输入要记忆的英文单词..." />
+          <button id="generateBtn" class="generate-button">
             <span>✨ 生成</span>
           </button>
         </div>
       </div>
 
-      <!-- 生成结果展示区域 -->
       <div class="result-section">
-        <!-- 场景描述 -->
         <div class="result-card">
-          <div class="card-header">
-            <span class="card-icon">🤖</span>
-            <span class="card-title">场景描述</span>
-          </div>
-          <div id="sceneDescription" class="card-content description-content">
-            <!-- AI生成的场景描述将在这里显示 -->
-            <div class="placeholder">输入单词并点击生成按钮，AI将为你创建生动的场景描述...</div>
-          </div>
-        </div>
-
-        <!-- 配图展示 -->
-        <div class="result-card">
-          <div class="card-header">
-            <span class="card-icon">🎨</span>
-            <span class="card-title">场景配图</span>
-          </div>
-          <div id="aiImage" class="card-content image-content">
-            <!-- AI生成的图片将在这里显示 -->
-            <div class="placeholder">场景描述生成后，AI将自动创建配图...</div>
+          <div class="card-content">
+            <div id="sceneDescription" class="description-content">
+              <div class="placeholder">输入单词并点击生成按钮，AI将为你创建生动的场景描述...</div>
+            </div>
           </div>
         </div>
       </div>
@@ -58,8 +41,9 @@
     <div class="footer">
       <button id="submitBtn" class="submit-button">
         <span class="submit-icon">📝</span>
-        <span>保存到 Flomo</span>
+        <span>提交到 Flomo</span>
       </button>
+      <div id="submitStatus" class="submit-status"></div>
     </div>
   </div>
   <script src="popup.js" type="module"></script>

@@ -20,6 +20,7 @@ body {
   padding: 12px 16px;
   background-color: #fff;
   border-bottom: 1px solid #eee;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .logo {
@@ -37,14 +38,16 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
   font-size: 16px;
   opacity: 0.7;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
+  border-radius: 6px;
 }
 
 .icon-button:hover {
   opacity: 1;
+  background-color: #f5f5f5;
 }
 
 .content {
@@ -71,12 +74,14 @@ body {
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   font-size: 15px;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
+  background: #fff;
 }
 
 .word-input:focus {
   outline: none;
   border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
 .generate-button {
@@ -90,11 +95,16 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
 .generate-button:hover {
   background-color: #45a049;
+  transform: translateY(-1px);
+}
+
+.generate-button:active {
+  transform: translateY(0);
 }
 
 /* 结果展示区域 */
@@ -106,9 +116,14 @@ body {
 
 .result-card {
   background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   overflow: hidden;
+  transition: all 0.2s;
+}
+
+.result-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .card-header {
@@ -131,47 +146,98 @@ body {
 }
 
 .card-content {
-  padding: 16px;
-  min-height: 100px;
+  padding: 20px;
 }
 
 .description-content {
-  padding: 16px;
   font-size: 14px;
   line-height: 1.6;
 }
 
-.description-content p {
-  margin: 0 0 12px;
+.word-section h3 {
+  margin: 0 0 16px;
+  font-size: 24px;
+  color: #333;
 }
 
-.description-content p:last-child {
-  margin-bottom: 0;
+.memory-section, .scene-section {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
 }
 
-.image-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f8f9fa;
-  border-radius: 4px;
+.memory-section p, .scene-section p {
+  margin: 8px 0;
 }
 
 .placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 40px 20px;
   color: #666;
   font-size: 14px;
-  background: #f5f5f5;
-  border-radius: 6px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  text-align: center;
+  line-height: 1.6;
 }
 
 .footer {
   padding: 16px;
   background-color: #fff;
   border-top: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.submit-status {
+  min-height: 24px;
+  text-align: center;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+
+.submit-status.show {
+  opacity: 1;
+}
+
+.submit-status.success {
+  color: #28a745;
+}
+
+.submit-status.error {
+  color: #dc3545;
+}
+
+/* 修改成功消息样式 */
+.success-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #f0f9f0;
+  border: 1px solid #e6f4e6;
+  border-radius: 6px;
+  color: #28a745;
+  font-size: 13px;
+  margin-top: 8px;
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .submit-button {
@@ -187,11 +253,47 @@ body {
   justify-content: center;
   gap: 8px;
   font-size: 14px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  font-weight: 500;
 }
 
 .submit-button:hover {
   background-color: #45a049;
+  transform: translateY(-1px);
+}
+
+.submit-button:active {
+  transform: translateY(0);
+}
+
+.submit-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.error-message {
+  background: #fff3f3;
+  border: 1px solid #ffebeb;
+  color: #dc3545;
 }
 
 .arrow {
@@ -229,26 +331,4 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-/* 加载和错误状态样式 */
-.loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  color: #666;
-  font-size: 14px;
-}
-
-.error-message {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px;
-  background: #fff3f3;
-  border: 1px solid #ffebeb;
-  border-radius: 6px;
-  color: #dc3545;
-  font-size: 14px;
 } 
