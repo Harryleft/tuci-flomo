@@ -78,6 +78,30 @@ class ConfigManager {
       throw error;
     }
   }
+
+  static async getWebhookUrl() {
+    try {
+      console.log('获取 Webhook URL...');
+      const result = await chrome.storage.sync.get('webhookUrl');
+      console.log('Webhook URL 状态:', result.webhookUrl ? '已配置' : '未配置');
+      return result.webhookUrl;
+    } catch (error) {
+      console.error('获取 Webhook URL 失败:', error);
+      throw error;
+    }
+  }
+
+  static async getDefaultTag() {
+    try {
+      const result = await chrome.storage.sync.get({
+        defaultTag: '#英语单词'
+      });
+      return result.defaultTag;
+    } catch (error) {
+      console.error('获取默认标签失败:', error);
+      return '#英语单词';  // 返回默认值
+    }
+  }
 }
 
 export default ConfigManager; 

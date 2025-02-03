@@ -4,6 +4,7 @@ import ConfigManager from '../services/ConfigManager.js';
 class PopupManager {
   constructor() {
     this.init();
+    this.currentDescription = null;  // 存储当前生成的描述
   }
 
   async init() {
@@ -31,6 +32,9 @@ class PopupManager {
     document.getElementById('closeBtn').addEventListener('click', () => {
       window.close();
     });
+
+    // 绑定提交按钮事件
+    this.submitBtn.disabled = true;  // 初始禁用提交按钮
   }
 
   async loadSettings() {
@@ -68,17 +72,31 @@ class PopupManager {
       // 显示加载状态
       this.setGenerating(true);
       this.descriptionContent.innerHTML = '<div class="loading">生成中...</div>';
-      this.imageContent.innerHTML = '<div class="loading">准备生成配图...</div>';
 
       // 生成场景描述
       console.log('调用 API 生成描述...');
-      const description = await APIClient.generateDescription(word, this.currentScene);
-      console.log('描述生成成功:', description);
-      this.descriptionContent.innerHTML = this.formatDescription(description);
+      const result = await APIClient.generateDescription(word, this.currentScene);
+      console.log('描述生成成功:', result);
 
-      // 生成配图
-      // TODO: 实现图片生成
-      this.imageContent.innerHTML = '<div class="placeholder">图片生成功能开发中...</div>';
+      // 格式化显示内容
+      const formattedContent = `
+        <div class="word-section">
+          <h3>📝 ${result.英语}</h3>
+        </div>
+        <div class="memory-section">
+          <p><strong>💡 助记拆解：</strong></p>
+          <p>${result.关键词}</p>
+        </div>
+        <div class="scene-section">
+          <p><strong>🌟 场景描述：</strong></p>
+          <p>${result.图像描述}</p>
+        </div>
+      `;
+      
+      this.descriptionContent.innerHTML = formattedContent;
+
+      // 保存当前描述用于提交
+      this.currentDescription = result;
 
       // 启用提交按钮
       this.submitBtn.disabled = false;
@@ -90,18 +108,54 @@ class PopupManager {
         scene: this.currentScene
       });
       this.showError(error.message || '生成失败，请重试');
+      this.submitBtn.disabled = true;  // 生成失败时禁用提交按钮
     } finally {
       this.setGenerating(false);
     }
   }
 
   async handleSubmit() {
+    if (!this.currentDescription) {
+      console.warn('没有可提交的内容');
+      this.showError('请先生成内容');
+      return;
+    }
+
     try {
-      // TODO: 实现提交到 Flomo
-      console.log('提交到 Flomo');
+      // 显示提交状态
+      this.submitBtn.disabled = true;
+      this.submitBtn.innerHTML = `
+        <span class="submit-icon">📝</span>
+        <span>提交中...</span>
+      `;
+
+      // 提交到 Flomo
+      await APIClient.submitToFlomo(this.currentDescription);
+
+      // 显示成功提示
+      this.showSuccess('已保存到 Flomo');
+
+      // 重置界面
+      setTimeout(() => {
+        this.wordInput.value = '';
+        this.descriptionContent.innerHTML = '<div class="placeholder">输入单词并点击生成按钮，AI将为你创建生动的场景描述...</div>';
+        this.imageContent.innerHTML = '<div class="placeholder">场景描述生成后，AI将自动创建配图...</div>';
+        this.currentDescription = null;
+        this.submitBtn.disabled = true;
+        this.submitBtn.innerHTML = `
+          <span class="submit-icon">📝</span>
+          <span>保存到 Flomo</span>
+        `;
+      }, 2000);
     } catch (error) {
       console.error('提交失败:', error);
       this.showError(error.message || '提交失败，请重试');
+      // 恢复提交按钮
+      this.submitBtn.disabled = false;
+      this.submitBtn.innerHTML = `
+        <span class="submit-icon">📝</span>
+        <span>保存到 Flomo</span>
+      `;
     }
   }
 
@@ -126,6 +180,15 @@ class PopupManager {
     this.descriptionContent.innerHTML = `
       <div class="error-message">
         <span class="error-icon">⚠️</span>
+        <span>${message}</span>
+      </div>
+    `;
+  }
+
+  showSuccess(message) {
+    this.descriptionContent.innerHTML = `
+      <div class="success-message">
+        <span class="success-icon">✅</span>
         <span>${message}</span>
       </div>
     `;

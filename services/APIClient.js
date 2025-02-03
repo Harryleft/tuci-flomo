@@ -82,7 +82,75 @@ class APIClient {
   }
 
   static async submitToFlomo(data) {
-    // TODO: 实现提交到 Flomo
+    try {
+      console.log('开始提交到 Flomo:', data);
+      
+      // 获取 Webhook URL
+      const webhookUrl = await ConfigManager.getWebhookUrl();
+      if (!webhookUrl) {
+        console.warn('未配置 Flomo Webhook URL');
+        throw new Error('请先设置 Flomo API');
+      }
+      console.log('Webhook URL 验证通过');
+
+      // 获取默认标签
+      const defaultTag = await ConfigManager.getDefaultTag() || '#英语单词';
+
+      // 构建提交内容，使用 Markdown 格式美化
+      const content = `📝 ${data.英语}
+
+---
+💡 助记拆解：
+${data.关键词}
+
+🌟 场景描述：
+${data.图像描述}
+
+
+${defaultTag} #场景记忆`;
+
+      // 构建请求选项
+      const options = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          content: content
+        })
+      };
+
+      console.log('Flomo 提交配置:', {
+        url: webhookUrl,
+        method: options.method,
+        headers: options.headers,
+        content: content
+      });
+
+      // 发送请求
+      const response = await fetch(webhookUrl, options);
+      console.log('Flomo 响应状态:', response.status);
+      
+      if (!response.ok) {
+        const error = await response.text();
+        console.error('提交到 Flomo 失败:', {
+          status: response.status,
+          statusText: response.statusText,
+          error
+        });
+        throw new Error('提交到 Flomo 失败，请检查 API 配置');
+      }
+
+      console.log('提交到 Flomo 成功');
+      return true;
+    } catch (error) {
+      console.error('提交到 Flomo 时出错:', {
+        error: error.message,
+        stack: error.stack,
+        data
+      });
+      throw error;
+    }
   }
 
   // 根据场景构建提示词
@@ -145,10 +213,20 @@ class APIClient {
     try {
       // 解析 JSON 响应
       const data = typeof content === 'object' ? content : JSON.parse(content);
-      return data.图像描述;
+      return {
+        英语: data.英语,
+        关键词: data.关键词,
+        世界观: data.世界观,
+        图像描述: data.图像描述
+      };
     } catch (error) {
       console.error('响应格式化失败:', error);
-      return content;
+      return {
+        英语: '',
+        关键词: '',
+        世界观: '',
+        图像描述: content
+      };
     }
   }
 }
