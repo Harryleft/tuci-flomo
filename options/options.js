@@ -1,69 +1,11 @@
-// 保存设置到 Chrome 存储
-async function saveOptions() {
-  const webhookUrl = document.getElementById('webhookUrl').value;
-  const defaultTag = document.getElementById('defaultTag').value;
-  const selectedScene = document.getElementById('sceneSelect').value;
-  const customScene = document.getElementById('customScene').value;
-
-  try {
-    await chrome.storage.sync.set({
-      webhookUrl,
-      defaultTag,
-      selectedScene,
-      customScene
-    });
-
-    // 显示保存成功提示
-    const saveBtn = document.getElementById('saveBtn');
-    const originalText = saveBtn.textContent;
-    saveBtn.textContent = '保存成功！';
-    saveBtn.disabled = true;
-    
-    setTimeout(() => {
-      saveBtn.textContent = originalText;
-      saveBtn.disabled = false;
-    }, 2000);
-  } catch (error) {
-    console.error('保存设置失败:', error);
-    alert('保存设置失败，请重试');
-  }
-}
-
-// 从 Chrome 存储加载设置
-async function loadOptions() {
-  try {
-    const result = await chrome.storage.sync.get({
-      webhookUrl: '',
-      defaultTag: '#英语单词',
-      selectedScene: 'default',
-      customScene: ''
-    });
-
-    document.getElementById('webhookUrl').value = result.webhookUrl;
-    document.getElementById('defaultTag').value = result.defaultTag;
-    document.getElementById('sceneSelect').value = result.selectedScene;
-    document.getElementById('customScene').value = result.customScene;
-    
-    // 根据选择显示/隐藏自定义场景输入框
-    const customSceneInput = document.getElementById('customScene');
-    customSceneInput.style.display = result.selectedScene === 'custom' ? 'block' : 'none';
-  } catch (error) {
-    console.error('加载设置失败:', error);
-  }
-}
-
-// 打开 Chrome 扩展快捷键设置页面
-function openShortcutSettings() {
-  chrome.tabs.create({
-    url: 'chrome://extensions/shortcuts'
-  });
-}
+import ConfigManager from '../services/ConfigManager.js';
 
 // 状态管理类
 class Store {
   constructor() {
     this.state = {};
     this.listeners = new Set();
+    this.maskedFields = ['apiKey']; // 需要遮罩的字段
   }
 
   // 订阅状态变化
@@ -74,12 +16,29 @@ class Store {
 
   // 更新状态
   async setState(newState) {
-    this.state = { ...this.state, ...newState };
+    // 处理需要遮罩的字段
+    const stateToSave = { ...newState };
+    for (const field of this.maskedFields) {
+      if (stateToSave[field] === '••••••••') {
+        delete stateToSave[field];
+      }
+    }
+
     try {
+      this.state = { ...this.state, ...stateToSave };
       // 保存到 Chrome Storage
       await chrome.storage.sync.set(this.state);
+      
+      // 创建用于显示的状态（包含遮罩）
+      const displayState = { ...this.state };
+      for (const field of this.maskedFields) {
+        if (displayState[field]) {
+          displayState[field] = '••••••••';
+        }
+      }
+      
       // 通知所有监听器
-      this.listeners.forEach(listener => listener(this.state));
+      this.listeners.forEach(listener => listener(displayState));
       return true;
     } catch (error) {
       console.error('保存状态失败:', error);
@@ -93,12 +52,22 @@ class Store {
       webhookUrl: '',
       defaultTag: '#英语单词',
       selectedScene: 'default',
-      customScene: ''
+      customScene: '',
+      apiKey: ''
     };
 
     try {
       this.state = await chrome.storage.sync.get(defaultState);
-      this.listeners.forEach(listener => listener(this.state));
+      
+      // 创建用于显示的状态（包含遮罩）
+      const displayState = { ...this.state };
+      for (const field of this.maskedFields) {
+        if (displayState[field]) {
+          displayState[field] = '••••••••';
+        }
+      }
+      
+      this.listeners.forEach(listener => listener(displayState));
     } catch (error) {
       console.error('加载状态失败:', error);
       this.state = defaultState;
@@ -122,6 +91,9 @@ class UIManager {
     
     // 加载初始状态
     this.store.loadState();
+
+    // 初始化 API 测试按钮
+    this.initApiTest();
   }
 
   initInputListeners() {
@@ -138,6 +110,17 @@ class UIManager {
     if (webhookInput) {
       webhookInput.addEventListener('input', debounce(e => {
         this.handleInputChange('webhookUrl', e.target.value);
+      }, 500));
+    }
+
+    // API Key 输入监听
+    const apiKeyInput = document.getElementById('apiKey');
+    if (apiKeyInput) {
+      apiKeyInput.addEventListener('input', debounce(e => {
+        // 只有当输入的不是占位符时才保存
+        if (!e.target.value.match(/^[•]+$/)) {
+          this.handleInputChange('apiKey', e.target.value);
+        }
       }, 500));
     }
 
@@ -193,6 +176,13 @@ class UIManager {
     const webhookInput = document.getElementById('webhookUrl');
     if (webhookInput) webhookInput.value = state.webhookUrl;
 
+    // 更新 API Key 输入框
+    const apiKeyInput = document.getElementById('apiKey');
+    if (apiKeyInput) {
+      // 如果有值则显示占位符，否则清空
+      apiKeyInput.value = state.apiKey ? '••••••••' : '';
+    }
+
     const tagInput = document.getElementById('defaultTag');
     if (tagInput) tagInput.value = state.defaultTag;
 
@@ -236,22 +226,38 @@ class UIManager {
       }, 2000);
     }
   }
+
+  initApiTest() {
+    const testBtn = document.getElementById('testApiBtn');
+    const resultSpan = document.getElementById('apiTestResult');
+
+    if (testBtn) {
+      testBtn.addEventListener('click', async () => {
+        try {
+          testBtn.disabled = true;
+          resultSpan.textContent = '测试中...';
+          resultSpan.className = 'api-test-result';
+
+          await ConfigManager.testAPIConnection();
+
+          resultSpan.textContent = '连接成功 ✓';
+          resultSpan.className = 'api-test-result success';
+        } catch (error) {
+          resultSpan.textContent = error.message || 'API 连接失败';
+          resultSpan.className = 'api-test-result error';
+        } finally {
+          testBtn.disabled = false;
+          setTimeout(() => {
+            resultSpan.style.opacity = '0';
+          }, 3000);
+        }
+      });
+    }
+  }
 }
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
   const store = new Store();
   new UIManager(store);
-
-  // 快捷键设置按钮点击事件
-  document.getElementById('changeShortcut').addEventListener('click', () => {
-    alert('请在 Chrome 浏览器地址栏输入: chrome://extensions/shortcuts\n然后找到"图词Flomo"进行快捷键设置');
-  });
-
-  // 场景选择变化处理
-  document.getElementById('sceneSelect')?.addEventListener('change', (e) => {
-    const customSceneInput = document.getElementById('customScene');
-    customSceneInput.style.display = e.target.value === 'custom' ? 'block' : 'none';
-    saveOptions();
-  });
 }); 

@@ -336,4 +336,49 @@ footer {
   color: #4CAF50;
   min-height: 20px;
   transition: opacity 0.3s ease-in-out;
+}
+
+.api-test {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #e9ecef;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.api-test-result {
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.api-test-result.success {
+  color: #4CAF50;
+  opacity: 1;
+}
+
+.api-test-result.error {
+  color: #dc3545;
+  opacity: 1;
 } 
