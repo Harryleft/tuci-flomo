@@ -40,10 +40,21 @@ main {
 }
 
 .notice {
-  background-color: #f8f9fa;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background-color: #f8fdf8;
   border-left: 4px solid #4CAF50;
   padding: 12px;
   margin-bottom: 16px;
+}
+
+.notice-icon {
+  font-size: 16px;
+}
+
+.notice-content {
+  flex: 1;
   font-size: 14px;
   line-height: 1.5;
 }
@@ -51,6 +62,11 @@ main {
 .notice a {
   color: #4CAF50;
   text-decoration: none;
+  font-weight: 500;
+}
+
+.notice a:hover {
+  text-decoration: underline;
 }
 
 .form-group {
@@ -151,21 +167,7 @@ input:checked + .slider:before {
 footer {
   padding: 20px;
   border-top: 1px solid #eee;
-  text-align: right;
-}
-
-.btn-primary {
-  padding: 8px 16px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.btn-primary:hover {
-  background-color: #45a049;
+  text-align: center;
 }
 
 .btn-secondary {
@@ -180,4 +182,158 @@ footer {
 
 .btn-secondary:hover {
   background-color: #e9ecef;
+}
+
+.custom-scene {
+  margin-top: 8px;
+}
+
+/* 场景设置样式 */
+.scene-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.scene-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #fff;
+  border: 2px solid #eee;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.scene-card:hover {
+  border-color: #4CAF50;
+  background: #f8fdf8;
+}
+
+.scene-card.active {
+  border-color: #4CAF50;
+  background: #f8fdf8;
+}
+
+.scene-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.scene-content {
+  flex: 1;
+}
+
+.scene-title {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.scene-desc {
+  font-size: 12px;
+  color: #666;
+}
+
+.scene-check {
+  color: #4CAF50;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.scene-card.active .scene-check {
+  opacity: 1;
+}
+
+.custom-scene-card .scene-content {
+  width: 100%;
+}
+
+.scene-radio {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.scene-radio input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.radio-checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background-color: #fff;
+  border: 2px solid #ddd;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.scene-radio input[type="radio"]:checked ~ .radio-checkmark {
+  border-color: #4CAF50;
+}
+
+.scene-radio input[type="radio"]:checked ~ .radio-checkmark:after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #4CAF50;
+}
+
+.custom-scene-input {
+  width: 100%;
+  padding: 8px 1px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  transition: all 0.2s;
+  background-color: #f5f5f5;
+}
+
+.custom-scene-input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.scene-card.active .custom-scene-input {
+  background-color: #fff;
+  border-color: #4CAF50;
+}
+
+.scene-card.active .custom-scene-input:disabled {
+  background-color: #fff;
+  cursor: text;
+}
+
+/* 输入提示 */
+.input-hint {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* 保存状态 */
+.save-status {
+  font-size: 14px;
+  color: #4CAF50;
+  min-height: 20px;
+  transition: opacity 0.3s ease-in-out;
 } 
