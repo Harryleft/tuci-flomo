@@ -1,4 +1,4 @@
-import ConfigManager from '../services/ConfigManager.js';
+import ConfigManager from '/services/ConfigManager.js';
 
 // 状态管理类
 class Store {
@@ -258,6 +258,22 @@ class UIManager {
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
-  const store = new Store();
-  new UIManager(store);
+  try {
+    const store = new Store();
+    new UIManager(store);
+    console.log('设置页面初始化成功');
+  } catch (error) {
+    console.error('初始化失败:', {
+      message: error.message,
+      stack: error.stack
+    });
+    // 显示友好的错误信息
+    document.body.innerHTML = `
+      <div class="error-message" style="padding: 20px;">
+        <h2>设置页面加载失败</h2>
+        <p>错误信息：${error.message}</p>
+        <p>请尝试重新加载页面或联系开发者</p>
+      </div>
+    `;
+  }
 }); 
