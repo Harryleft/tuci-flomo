@@ -6,10 +6,14 @@
   "permissions": [
     "storage",
     "contextMenus",
-    "activeTab"
+    "activeTab",
+    "scripting"
   ],
   "host_permissions": [
-    "*://*/*"
+    "*://*/*",
+    "https://api.deepseek.com/*",
+    "https://api.siliconflow.cn/*",
+    "chrome-extension://*"
   ],
   "background": {
     "service_worker": "background/service-worker.js"
@@ -35,5 +39,16 @@
     "48": "assets/icon48.png",
     "128": "assets/icon128.png"
   },
-  "options_page": "options/options.html"
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "web_accessible_resources": [{
+    "resources": [
+      "services/*.js",
+      "options/*.js",
+      "options/*.css"
+    ],
+    "matches": ["<all_urls>"]
+  }]
 } 
