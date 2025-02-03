@@ -26,6 +26,11 @@ class PopupManager {
       // 打开选项页面
       chrome.runtime.openOptionsPage();
     });
+
+    // 添加关闭按钮点击事件处理
+    document.getElementById('closeBtn').addEventListener('click', () => {
+      window.close();
+    });
   }
 
   async loadSettings() {
