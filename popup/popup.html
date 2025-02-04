@@ -1,51 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="popup.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图词 Flomo 插件</title>
+  <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="logo">
-        <span>🎯 图词Flomo</span>
+  <div class="side-panel">
+    <!-- 头部区域 -->
+    <header class="side-panel__header">
+      <div class="side-panel__brand">
+        <div class="side-panel__logo">
+          <span class="side-panel__logo-icon">📚</span>
+          <span class="side-panel__logo-text">图词 flomo</span>
+        </div>
+        <span class="side-panel__subtitle">可视化单词记忆</span>
       </div>
-      <div class="actions-top">
-        <button id="settingsBtn" class="icon-button" title="设置" data-page="options">⚙️</button>
-        <button id="closeBtn" class="icon-button" title="关闭">✕</button>
+      <div class="side-panel__actions">
+        <button id="settingsBtn" class="header-btn" title="设置">
+          <span class="header-btn__icon">⚙️</span>
+        </button>
+        <button id="closeBtn" class="header-btn" title="关闭">
+          <span class="header-btn__icon">✕</span>
+        </button>
       </div>
-    </div>
+    </header>
 
-    <div class="content">
-      <div class="word-section">
-        <div class="word-input-wrapper">
-          <input type="text" id="wordInput" class="word-input" 
-            placeholder="输入要记忆的英文单词..." />
-          <button id="generateBtn" class="generate-button">
-            <span>✨ 生成</span>
+    <!-- 主体内容区域 -->
+    <main class="side-panel__content">
+      <!-- 输入区域 -->
+      <section class="input-section">
+        <div class="input-section__wrapper">
+          <input type="text" 
+                 id="wordInput" 
+                 class="input-section__input" 
+                 placeholder="输入单词"
+                 autocomplete="off">
+          <button id="generateBtn" class="generate-btn">
+            <span class="generate-btn__text">生成</span>
+            <span class="generate-btn__icon">✨</span>
           </button>
         </div>
-      </div>
+      </section>
 
-      <div class="result-section">
-        <div class="result-card">
-          <div class="card-content">
-            <div id="sceneDescription" class="description-content">
-              <div class="placeholder">输入单词并点击生成按钮，AI将为你创建生动的场景描述...</div>
+      <!-- 结果展示区域 -->
+      <section class="result-section">
+        <div class="result-section__card">
+          <div id="sceneDescription" class="result-section__description">
+            <div class="result-section__placeholder text-secondary">
+              输入单词并点击生成按钮，AI将为你创建生动的场景描述...
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
 
-    <div class="footer">
-      <button id="submitBtn" class="submit-button">
-        <span class="submit-icon">📝</span>
-        <span>提交到 Flomo</span>
+    <!-- 底部区域 -->
+    <footer class="side-panel__footer">
+      <button id="submitBtn" class="btn btn--submit" disabled>
+        <span class="btn__icon">📝</span>
+        <span class="btn__text">提交到 Flomo</span>
       </button>
       <div id="submitStatus" class="submit-status"></div>
-    </div>
+    </footer>
   </div>
-  <script src="popup.js" type="module"></script>
+  <script type="module" src="popup.js"></script>
 </body>
-</html> 
+</html>

@@ -1,27 +1,88 @@
+/* 头部区域 */
 .side-panel__header {
   height: var(--header-height);
-  min-height: var(--header-height);
-  padding: var(--spacing-md);
-  background: rgba(255, 255, 255, 0.95);
+  padding: 20px var(--spacing-lg);
+  background: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
-  backdrop-filter: blur(10px);
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+/* 品牌区域 */
+.side-panel__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .side-panel__logo {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  font-weight: 500;
+  gap: 8px;
 }
 
 .side-panel__logo-icon {
-  font-size: 20px;
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
+.side-panel__logo-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.side-panel__subtitle {
+  font-size: 12px;
+  color: var(--accent-color);
+  margin-left: 1px;
+  font-weight: 500;
+}
+
+/* 操作按钮区域 */
 .side-panel__actions {
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+/* 头部按钮样式 */
+.header-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--accent-color);
+}
+
+.header-btn__icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* 关闭按钮特殊样式 */
+.header-btn[title="关闭"] {
+  font-size: 20px;
+  font-weight: 400;
+}
+
+/* 设置按钮特殊样式 */
+.header-btn[title="设置"]:hover {
+  transform: rotate(30deg);
 } 

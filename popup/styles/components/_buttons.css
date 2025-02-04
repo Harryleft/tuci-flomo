@@ -57,19 +57,44 @@
   display: inline-flex;
 }
 
-.generate-button {
-  background: transparent;
-  border: none;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  cursor: pointer;
-  display: flex;
+.generate-btn {
+  display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs);
-  transition: opacity var(--transition-fast);
+  padding: 8px var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
-.generate-button:hover {
-  opacity: 0.8;
+.generate-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.generate-btn:active {
+  transform: translateY(0);
+}
+
+.generate-btn__text {
+  order: 1;
+}
+
+.generate-btn__icon {
+  order: 2;
+  font-size: 1rem;
+}
+
+.generate-btn:disabled {
+  background: var(--text-secondary);
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* ... 其他按钮样式 ... */ 

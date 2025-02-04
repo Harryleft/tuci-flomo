@@ -11,33 +11,38 @@
 
 /* 输入区域 */
 .input-section {
-  position: relative;
+  padding: var(--spacing-sm);
   background: var(--bg-primary);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: var(--spacing-sm);
   border: 1px solid var(--border-color);
   transition: all var(--transition-fast);
 }
 
 .input-section:focus-within {
-  box-shadow: var(--shadow-md);
   border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
 }
 
-.word-input-wrapper {
+.input-section__wrapper {
   display: flex;
-  gap: var(--spacing-sm);
   align-items: center;
+  gap: var(--spacing-sm);
 }
 
-.word-input {
+.input-section__input {
   flex: 1;
+  height: 36px;
+  padding: 0 var(--spacing-sm);
   border: none;
-  outline: none;
-  font-size: 0.95rem;
   background: transparent;
-  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.input-section__input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.8;
 }
 
 /* 结果区域 */
