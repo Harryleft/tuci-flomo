@@ -1,0 +1,53 @@
+/* 基础样式 */
+@import 'base/_variables.css';
+@import 'base/_reset.css';
+@import 'base/_typography.css';
+
+/* 布局 */
+@import 'layout/_sidepanel.css';
+@import 'layout/_header.css';
+@import 'layout/_content.css';
+@import 'layout/_footer.css';
+
+/* 组件 */
+@import 'components/_buttons.css';
+@import 'components/_inputs.css';
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  :root {
+    --side-panel-width: 350px;
+    --spacing-md: 0.5rem;
+  }
+  
+  .side-panel__content {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+  
+  .input-section {
+    padding: var(--spacing-xs);
+  }
+  
+  .result-section {
+    padding: var(--spacing-sm);
+  }
+  
+  .result-card {
+    padding: var(--spacing-sm);
+  }
+}
+
+/* 深色模式 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #242424;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --border-color: #333333;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.25);
+    --shadow-lg: 0 3px 12px rgba(0, 0, 0, 0.3);
+  }
+} 

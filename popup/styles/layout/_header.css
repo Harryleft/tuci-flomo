@@ -1,0 +1,27 @@
+.side-panel__header {
+  height: var(--header-height);
+  min-height: var(--header-height);
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.side-panel__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-weight: 500;
+}
+
+.side-panel__logo-icon {
+  font-size: 20px;
+}
+
+.side-panel__actions {
+  display: flex;
+  align-items: center;
+} 

@@ -1,0 +1,11 @@
+.side-panel__footer {
+  padding: var(--spacing-md);
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+}
+
+.submit-status {
+  margin-top: var(--spacing-sm);
+  text-align: center;
+  min-height: 24px;
+} 

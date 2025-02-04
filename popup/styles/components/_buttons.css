@@ -1,0 +1,75 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn--icon {
+  background: transparent;
+  font-size: 16px;
+}
+
+.btn--primary {
+  background-color: var(--primary-color);
+  color: #fff;
+  padding: 10px 16px;
+}
+
+.btn--primary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn--submit {
+  width: 100%;
+  height: 40px;
+  background-color: var(--primary-color);
+  color: #fff;
+  padding: 10px 16px;
+  justify-content: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.btn--submit:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn:disabled,
+.btn--submit:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn__icon {
+  display: inline-flex;
+}
+
+.btn__text {
+  display: inline-flex;
+}
+
+.generate-button {
+  background: transparent;
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: opacity var(--transition-fast);
+}
+
+.generate-button:hover {
+  opacity: 0.8;
+}
+
+/* ... 其他按钮样式 ... */ 
