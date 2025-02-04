@@ -7,63 +7,84 @@
   <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-  <div class="side-panel">
-    <!-- 头部区域 -->
-    <header class="side-panel__header">
-      <div class="side-panel__brand">
-        <div class="side-panel__logo">
-          <span class="side-panel__logo-icon">📚</span>
-          <span class="side-panel__logo-text">图词 flomo</span>
-        </div>
-        <span class="side-panel__subtitle">可视化单词记忆</span>
-      </div>
-      <div class="side-panel__actions">
-        <button id="settingsBtn" class="header-btn" title="设置">
-          <span class="header-btn__icon">⚙️</span>
-        </button>
-        <button id="closeBtn" class="header-btn" title="关闭">
-          <span class="header-btn__icon">✕</span>
-        </button>
-      </div>
-    </header>
-
-    <!-- 主体内容区域 -->
-    <main class="side-panel__content">
-      <!-- 输入区域 -->
-      <section class="input-section">
-        <div class="input-section__wrapper">
-          <input type="text" 
-                 id="wordInput" 
-                 class="input-section__input" 
-                 placeholder="输入单词"
-                 autocomplete="off">
-          <button id="generateBtn" class="generate-btn">
-            <span class="generate-btn__text">生成</span>
-            <span class="generate-btn__icon">✨</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- 结果展示区域 -->
-      <section class="result-section">
-        <div class="result-section__card">
-          <div id="sceneDescription" class="result-section__description">
-            <div class="result-section__placeholder text-secondary">
-              输入单词并点击生成按钮，AI将为你创建生动的场景描述...
+  <div class="container">
+    <!-- 如果父容器设置了固定宽度 -->
+    <div class="content">
+      <div class="side-panel">
+        <!-- 头部区域 -->
+        <header class="side-panel__header">
+          <div class="side-panel__brand">
+            <div class="side-panel__logo">
+              <span class="side-panel__logo-icon">📚</span>
+              <span class="side-panel__logo-text">图词 flomo</span>
             </div>
+            <span class="side-panel__subtitle">可视化单词记忆</span>
           </div>
-        </div>
-      </section>
-    </main>
+          <div class="side-panel__actions">
+            <button id="settingsBtn" class="header-btn" title="设置">
+              <span class="header-btn__icon">⚙️</span>
+            </button>
+            <button id="closeBtn" class="header-btn" title="关闭">
+              <span class="header-btn__icon">✕</span>
+            </button>
+          </div>
+        </header>
 
-    <!-- 底部区域 -->
-    <footer class="side-panel__footer">
-      <button id="submitBtn" class="btn btn--submit" disabled>
-        <span class="btn__icon">📝</span>
-        <span class="btn__text">提交到 Flomo</span>
-      </button>
-      <div id="submitStatus" class="submit-status"></div>
-    </footer>
+        <!-- 主体内容区域 -->
+        <main class="side-panel__content">
+          <!-- 输入区域 -->
+          <!-- <section class="input-section"> -->
+            <div class="input-section__wrapper">
+              <input type="text" 
+                     id="wordInput" 
+                     class="input-section__input" 
+                     placeholder="输入单词"
+                     autocomplete="off">
+              <button id="generateBtn" class="generate-btn">
+                <span class="generate-btn__text">生成</span>
+                <span class="generate-btn__icon">✨</span>
+              </button>
+            </div>
+          <!-- </section> -->
+
+          <!-- 结果展示区域 -->
+          <section class="result-section">
+            <!-- 场景描述卡片 -->
+            <div class="result-section__card">
+              <div id="sceneDescription" class="result-section__description">
+                <div class="result-section__placeholder text-secondary">
+                  输入单词并点击生成按钮，AI将为你创建生动的场景描述...
+                </div>
+              </div>
+            </div>
+
+            <!-- 新增：图片展示卡片 -->
+            <div class="result-section__card">
+              <div id="imageContainer" class="result-section__image-container">
+                <div class="result-section__placeholder text-secondary">
+                  场景描述生成后，将在此处显示相关的图片...
+                </div>
+                <!-- 图片加载时显示的加载动画 -->
+                <div id="imageLoading" class="result-section__loading hidden">
+                  <span class="loading-spinner"></span>
+                  <span class="loading-text">正在生成图片...</span>
+                </div>
+                <!-- 实际的图片元素 -->
+                <img id="generatedImage" class="result-section__image hidden" alt="生成的场景图片">
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <!-- 底部区域 -->
+        <footer class="side-panel__footer">
+          <button id="submitBtn" class="btn btn--submit" disabled>
+            <span class="btn__icon">📝</span>
+            <span class="btn__text">提交到 Flomo</span>
+          </button>
+        </footer>
+      </div>
+    </div>
   </div>
   <script type="module" src="popup.js"></script>
 </body>

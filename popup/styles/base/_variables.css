@@ -76,6 +76,16 @@
   /* 输入框 */
   --input-min-height: 150px;
   --input-max-height: 300px;
+  
+  /* 如果还没有定义这些变量，请添加 */
+  --color-card-bg: #ffffff;
+  --border-radius-lg: 12px;
+  --border-radius-md: 8px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --font-size-sm: 14px;
+  --color-text-secondary: #666666;
+  --color-border: #e5e7eb;
+  --color-primary: #3b82f6;
 }
 
 /* 暗色模式变量 */

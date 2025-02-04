@@ -1,0 +1,84 @@
+/* 结果展示区域的基础样式 */
+.result-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  height: 100%;
+}
+
+/* 结果卡片通用样式 */
+.result-section__card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+}
+
+/* 场景描述样式 */
+.result-section__description {
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+/* 图片容器样式 */
+.result-section__image-container {
+  position: relative;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* 占位文本样式 */
+.result-section__placeholder {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-md);
+}
+
+/* 加载动画容器 */
+.result-section__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* 加载动画图标 */
+.loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* 加载文本 */
+.loading-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* 生成的图片样式 */
+.result-section__image {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--border-radius-md);
+}
+
+/* 隐藏元素 */
+.hidden {
+  display: none !important;
+}
+
+/* 加载动画关键帧 */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+} 

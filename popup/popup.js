@@ -3,98 +3,73 @@ import ConfigManager from '../services/ConfigManager.js';
 
 class PopupManager {
   constructor() {
-    console.log('PopupManager 构造函数被调用');
     if (document.readyState === 'loading') {
-      console.log('DOM 还在加载中，等待 DOMContentLoaded');
       document.addEventListener('DOMContentLoaded', () => this.initialize());
     } else {
-      console.log('DOM 已加载完成，直接初始化');
       this.initialize();
     }
-    this.currentDescription = null;  // 存储当前生成的描述
   }
 
   async initialize() {
     try {
-      console.log('开始初始化');
-      await this.initLayout();
-      await this.init();
-      console.log('初始化完成');
+      // 检查是否在 Side Panel 环境中
+      this.isSidePanel = chrome.runtime?.getManifest()?.side_panel !== undefined;
+      
+      // 如果不在 Side Panel 中，则打开 Side Panel
+      if (!this.isSidePanel) {
+        await this.openSidePanel();
+        return;
+      }
+      
+      await this.initElements();
+      await this.loadSettings();
     } catch (error) {
       console.error('初始化失败:', error);
     }
   }
 
-  async init() {
+  async initElements() {
     try {
       // 初始化元素引用
-      this.wordInput = this.getElement('wordInput');
-      this.generateBtn = this.getElement('generateBtn');
-      this.descriptionContent = this.getElement('sceneDescription');
-      this.imageContent = this.getElement('aiImage');
-      this.submitBtn = this.getElement('submitBtn');
-      this.settingsBtn = this.getElement('settingsBtn');
-      this.closeBtn = this.getElement('closeBtn');  // 添加关闭按钮引用
+      this.wordInput = document.getElementById('wordInput');
+      this.generateBtn = document.getElementById('generateBtn');
+      this.descriptionContent = document.getElementById('sceneDescription');
+      this.submitBtn = document.getElementById('submitBtn');
+      this.settingsBtn = document.getElementById('settingsBtn');
+      this.closeBtn = document.getElementById('closeBtn');
 
-      // 加载设置
-      await this.loadSettings();
-
-      // 绑定事件
-      if (this.generateBtn) {
-        this.generateBtn.addEventListener('click', () => this.handleGenerate());
-      }
-      
-      if (this.submitBtn) {
-        this.submitBtn.addEventListener('click', () => this.handleSubmit());
-        this.submitBtn.disabled = true;  // 初始禁用提交按钮
-      }
-
-      if (this.settingsBtn) {
-        this.settingsBtn.addEventListener('click', () => {
-          chrome.runtime.openOptionsPage();
-        });
-      }
-
-      // 添加关闭按钮事件监听
-      if (this.closeBtn) {
-        this.closeBtn.addEventListener('click', () => {
-          this.closePanel();
-        });
-      }
-
+      // 绑定事件监听器
+      this.bindEventListeners();
     } catch (error) {
-      console.error('初始化组件失败:', error);
-      this.showError('初始化失败，请刷新页面重试');
+      console.error('初始化元素失败:', error);
+      throw error;
     }
   }
 
-  // 辅助方法：获取 DOM 元素
-  getElement(id) {
-    const element = document.getElementById(id);
-    if (!element) {
-      console.warn(`未找到元素: ${id}`);
+  bindEventListeners() {
+    // 生成按钮事件
+    if (this.generateBtn) {
+      this.generateBtn.addEventListener('click', () => this.handleGenerate());
     }
-    return element;
-  }
 
-  initLayout() {
-    try {
-      console.log('初始化布局');
-      
-      // 添加滑入动画
-      const sidePanel = document.querySelector('.side-panel');
-      if (sidePanel) {
-        // 确保元素已渲染
-        requestAnimationFrame(() => {
-          // 触发重排以确保动画生效
-          sidePanel.offsetHeight;
-          // 添加可见类名触发动画
-          sidePanel.classList.add('is-visible');
-        });
-      }
+    // 提交按钮事件
+    if (this.submitBtn) {
+      this.submitBtn.addEventListener('click', () => this.handleSubmit());
+      this.submitBtn.disabled = true;  // 初始禁用提交按钮
+    }
 
-    } catch (error) {
-      console.error('布局初始化失败:', error);
+    // 设置按钮事件
+    if (this.settingsBtn) {
+      this.settingsBtn.addEventListener('click', () => {
+        chrome.runtime.openOptionsPage();
+      });
+    }
+
+    // 关闭按钮事件
+    if (this.closeBtn) {
+      this.closeBtn.addEventListener('click', () => this.closePanel());
+    } else {
+      console.error('关闭按钮未找到');
     }
   }
 
@@ -186,20 +161,15 @@ class PopupManager {
       // 显示提交状态
       this.submitBtn.disabled = true;
       this.submitBtn.innerHTML = `
-        <span class="submit-icon">📝</span>
-        <span>提交中...</span>
+        <span class="btn__icon">📝</span>
+        <span class="btn__text">提交中...</span>
       `;
 
       // 提交到 Flomo
       await APIClient.submitToFlomo(this.currentDescription);
 
-      // 显示成功状态
-      const submitStatus = document.getElementById('submitStatus');
-      submitStatus.innerHTML = `
-        <span class="success-icon">✅</span>
-        <span>已成功保存到 Flomo</span>
-      `;
-      submitStatus.className = 'submit-status success show';
+      // 显示成功提示
+      this.showSuccessStatus();
 
       // 重置界面
       setTimeout(() => {
@@ -208,27 +178,23 @@ class PopupManager {
         this.currentDescription = null;
         this.submitBtn.disabled = true;
         this.submitBtn.innerHTML = `
-          <span class="submit-icon">📝</span>
-          <span>提交到 Flomo</span>
+          <span class="btn__icon">📝</span>
+          <span class="btn__text">提交到 Flomo</span>
         `;
-        // 淡出成功提示
-        submitStatus.className = 'submit-status';
-      }, 2000);
+      }, 1000);
+
     } catch (error) {
       console.error('提交失败:', error);
-      const submitStatus = document.getElementById('submitStatus');
-      submitStatus.innerHTML = `
-        <span class="error-icon">⚠️</span>
-        <span>${error.message || '提交失败，请重试'}</span>
-      `;
-      submitStatus.className = 'submit-status error show';
       
-      // 恢复提交按钮
+      // 恢复提交按钮状态
       this.submitBtn.disabled = false;
       this.submitBtn.innerHTML = `
-        <span class="submit-icon">📝</span>
-        <span>提交到 Flomo</span>
+        <span class="btn__icon">📝</span>
+        <span class="btn__text">提交到 Flomo</span>
       `;
+      
+      // 显示错误提示
+      this.showError(error.message || '提交失败，请重试');
     }
   }
 
@@ -268,13 +234,108 @@ class PopupManager {
     `;
   }
 
+  showSuccessStatus() {
+    // 移除已存在的提示
+    const existingStatus = document.getElementById('submitStatus');
+    if (existingStatus) {
+      existingStatus.remove();
+    }
+    
+    // 创建新的提示元素
+    const statusEl = document.createElement('div');
+    statusEl.id = 'submitStatus';
+    statusEl.className = 'submit-status';
+    statusEl.innerHTML = `
+      <span class="submit-status__icon">✓</span>
+      <span class="submit-status__text">已保存</span>
+    `;
+    
+    // 添加到 body 末尾
+    document.body.appendChild(statusEl);
+    
+    // 强制重绘
+    void statusEl.offsetWidth;
+    
+    // 显示提示
+    statusEl.classList.add('submit-status--success');
+    
+    // 1秒后开始消失动画
+    setTimeout(() => {
+      statusEl.classList.add('submit-status--hide');
+      
+      // 动画结束后移除元素
+      statusEl.addEventListener('animationend', () => {
+        statusEl.remove();
+      }, { once: true });
+    }, 1000);
+  }
+
+  // 添加阻止自动关闭的方法
+  preventAutoClose() {
+    // 移除原有的 blur 事件监听，因为它可能会干扰正常的交互
+    
+    // 1. 阻止点击事件冒泡
+    document.addEventListener('click', (e) => {
+      e.stopPropagation();
+    }, true);
+    
+    // 2. 阻止鼠标离开事件
+    document.addEventListener('mouseleave', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+    }, true);
+    
+    // 3. 阻止失焦事件
+    document.addEventListener('blur', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+    }, true);
+    
+    // 4. 阻止 visibilitychange 事件
+    document.addEventListener('visibilitychange', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      if (document.visibilityState === 'hidden') {
+        document.visibilityState = 'visible';
+      }
+    }, true);
+    
+    // 5. 保持焦点在窗口内
+    setInterval(() => {
+      if (!document.hasFocus()) {
+        window.focus();
+      }
+    }, 100);
+    
+    // 6. 阻止 ESC 键关闭
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    }, true);
+  }
+
+  // 修改关闭面板方法
   closePanel() {
-    window.close();  // 直接关闭窗口
+    if (this.isSidePanel) {
+      chrome.sidePanel.close();
+    } else {
+      window.close();
+    }
+  }
+
+  async openSidePanel() {
+    try {
+      // 打开 Side Panel
+      await chrome.sidePanel.open();
+      // 关闭当前 popup
+      window.close();
+    } catch (error) {
+      console.error('打开 Side Panel 失败:', error);
+    }
   }
 }
-
-// 导出 PopupManager 类
-export default PopupManager;
 
 // 初始化
 new PopupManager(); 

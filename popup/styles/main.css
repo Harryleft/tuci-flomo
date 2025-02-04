@@ -12,6 +12,7 @@
 /* 组件 */
 @import 'components/_buttons.css';
 @import 'components/_inputs.css';
+@import './components/_result-section.css';
 
 /* 响应式设计 */
 @media (max-width: 768px) {
