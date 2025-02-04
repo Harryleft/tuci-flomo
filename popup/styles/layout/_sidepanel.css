@@ -1,44 +1,53 @@
 /* 侧边栏容器 */
 .side-panel {
   position: relative;
-  width: clamp(280px, 25vw, 380px);
-  min-height: 100vh; /* 改用最小高度确保内容可以完整显示 */
+  width: 320px; /* 固定宽度，更适合弹出窗口 */
+  height: 480px; /* 固定高度，更适合弹出窗口 */
+
   display: flex;
   flex-direction: column;
   background: var(--bg-primary);
-  box-shadow: var(--shadow-md);
-  transition: width var(--transition-fast);
 }
 
-/* 内容区域自适应 */
+/* 头部区域 */
+.side-panel__header {
+  flex-shrink: 0;
+  padding: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}
+
+/* 内容区域 */
 .side-panel__content {
-  position: relative;
-  flex: 1;  /* 使用 flex: 1 确保内容区域可以填充剩余空间 */
-  min-height: 0; /* 防止 flex 子项溢出 */
+  flex: 1;
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-md);
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
   overflow-y: auto;
+}
+
+/* 输入区域 */
+.input-section__wrapper {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
 }
 
 /* 结果区域 */
 .result-section {
   flex: 1;
-  min-height: 0; /* 防止内容溢出 */
   display: flex;
   flex-direction: column;
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
-  overflow: hidden;
+  gap: var(--spacing-sm);
 }
 
-.result-section__card {
-  flex: 1;
-  min-height: 0; /* 防止内容溢出 */
-  padding: var(--spacing-md);
-  overflow-y: auto;
+/* 底部区域 */
+.side-panel__footer {
+  flex-shrink: 0;
+  padding: var(--spacing-sm);
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-primary);
 }
 
 /* 输入区域自适应 */
@@ -50,30 +59,10 @@
   border: 1px solid var(--border-color);
 }
 
-.input-section__wrapper {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
 .input-section__input {
   height: 36px; /* 固定高度 */
   min-height: unset; /* 移除之前的最小高度限制 */
   max-height: unset; /* 移除之前的最大高度限制 */
-}
-
-/* 头部和底部固定高度 */
-.side-panel__header,
-.side-panel__footer {
-  flex-shrink: 0; /* 防止头部和底部被压缩 */
-  height: var(--header-height);
-  padding: var(--spacing-md);
-  display: flex;
-  align-items: center;
-}
-
-.side-panel__footer {
-  height: var(--footer-height);
 }
 
 /* 响应式调整 */
@@ -117,6 +106,15 @@
 @media (prefers-color-scheme: dark) {
   .side-panel {
     background: var(--bg-primary);
+    border-left: 1px solid var(--border-color);
+  }
+}
+
+/* Side Panel 特定样式 */
+@media (min-width: 769px) {
+  .side-panel {
+    width: 100%;
+    max-width: none;
     border-left: 1px solid var(--border-color);
   }
 } 
