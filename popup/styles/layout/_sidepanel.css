@@ -1,0 +1,122 @@
+/* 侧边栏容器 */
+.side-panel {
+  position: relative;
+  width: clamp(280px, 25vw, 380px);
+  min-height: 100vh; /* 改用最小高度确保内容可以完整显示 */
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-md);
+  transition: width var(--transition-fast);
+}
+
+/* 内容区域自适应 */
+.side-panel__content {
+  position: relative;
+  flex: 1;  /* 使用 flex: 1 确保内容区域可以填充剩余空间 */
+  min-height: 0; /* 防止 flex 子项溢出 */
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-md);
+  gap: var(--spacing-md);
+  overflow-y: auto;
+}
+
+/* 结果区域 */
+.result-section {
+  flex: 1;
+  min-height: 0; /* 防止内容溢出 */
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.result-section__card {
+  flex: 1;
+  min-height: 0; /* 防止内容溢出 */
+  padding: var(--spacing-md);
+  overflow-y: auto;
+}
+
+/* 输入区域自适应 */
+.input-section {
+  flex-shrink: 0; /* 防止输入区域被压缩 */
+  padding: var(--spacing-sm);
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.input-section__wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.input-section__input {
+  height: 36px; /* 固定高度 */
+  min-height: unset; /* 移除之前的最小高度限制 */
+  max-height: unset; /* 移除之前的最大高度限制 */
+}
+
+/* 头部和底部固定高度 */
+.side-panel__header,
+.side-panel__footer {
+  flex-shrink: 0; /* 防止头部和底部被压缩 */
+  height: var(--header-height);
+  padding: var(--spacing-md);
+  display: flex;
+  align-items: center;
+}
+
+.side-panel__footer {
+  height: var(--footer-height);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .side-panel {
+    width: 100%;
+    max-width: none;
+  }
+
+  .side-panel__content {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+}
+
+/* 图标尺寸响应式 */
+.header-btn__icon {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+}
+
+/* 滚动条样式优化 */
+.side-panel__content {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.side-panel__content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.side-panel__content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.side-panel__content::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 3px;
+}
+
+/* 暗色模式适配 */
+@media (prefers-color-scheme: dark) {
+  .side-panel {
+    background: var(--bg-primary);
+    border-left: 1px solid var(--border-color);
+  }
+} 

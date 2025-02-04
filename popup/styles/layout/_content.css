@@ -92,4 +92,19 @@
   font-size: 0.9rem;
   background: var(--bg-secondary);
   border-radius: var(--radius-md);
+}
+
+/* 移除任何可能影响高度计算的样式 */
+.content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 确保内容区域可以正确滚动 */
+.result-section__description {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
 } 

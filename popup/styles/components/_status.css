@@ -1,0 +1,93 @@
+/* 状态提示容器 */
+.submit-status {
+  position: fixed;
+  right: var(--spacing-md);
+  bottom: calc(var(--footer-height) + var(--spacing-md));
+  max-width: 90%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  box-shadow: var(--shadow-sm);
+  transform: translateX(120%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* 成功状态 */
+.submit-status--success {
+  background: var(--accent-color);
+  color: #ffffff;
+  transform: translateX(0);
+  opacity: 1;
+  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 状态图标 */
+.submit-status__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* 状态文本 */
+.submit-status__text {
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 滑入动画 */
+@keyframes slideInRight {
+  0% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 自动消失动画 */
+.submit-status--hide {
+  animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideOutRight {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+/* 暗色模式适配 */
+@media (prefers-color-scheme: dark) {
+  .submit-status--success {
+    background: var(--accent-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .submit-status {
+    right: var(--spacing-sm);
+    bottom: calc(var(--footer-height) + var(--spacing-sm));
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+} 

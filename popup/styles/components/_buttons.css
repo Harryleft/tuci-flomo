@@ -2,11 +2,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: var(--radius-md);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
   border: none;
-  font-size: 0.9rem;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
   font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
@@ -30,31 +33,37 @@
 .btn--submit {
   width: 100%;
   height: 40px;
-  background-color: var(--primary-color);
-  color: #fff;
-  padding: 10px 16px;
-  justify-content: center;
-  margin-bottom: var(--spacing-sm);
+  color: #ffffff;
+  background: var(--accent-color);
+  box-shadow: 0 2px 4px rgba(0, 184, 148, 0.2);
 }
 
-.btn--submit:hover {
-  background-color: var(--primary-hover);
+.btn--submit:hover:not(:disabled) {
+  background: var(--accent-hover);
   transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 184, 148, 0.25);
 }
 
-.btn:disabled,
+.btn--submit:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 184, 148, 0.2);
+}
+
 .btn--submit:disabled {
-  background-color: #ccc;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
   cursor: not-allowed;
-  transform: none;
+  box-shadow: none;
+  opacity: 0.7;
 }
 
 .btn__icon {
-  display: inline-flex;
+  font-size: 1.1em;
+  line-height: 1;
 }
 
 .btn__text {
-  display: inline-flex;
+  font-weight: 500;
 }
 
 .generate-btn {
@@ -97,4 +106,29 @@
   transform: none;
 }
 
-/* ... 其他按钮样式 ... */ 
+/* ... 其他按钮样式 ... */
+
+/* 暗色模式适配 */
+@media (prefers-color-scheme: dark) {
+  .btn--submit {
+    box-shadow: 0 2px 4px rgba(0, 184, 148, 0.1);
+  }
+  
+  .btn--submit:hover:not(:disabled) {
+    box-shadow: 0 4px 8px rgba(0, 184, 148, 0.15);
+  }
+  
+  .btn--submit:disabled {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    opacity: 0.5;
+  }
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .btn--submit {
+    height: 36px;
+    font-size: var(--font-size-sm);
+  }
+} 
