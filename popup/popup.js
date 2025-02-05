@@ -297,8 +297,28 @@ class PopupManager {
   preventAutoClose() {
     // 只阻止特定的关闭行为
     const preventClose = (e) => {
+      // 添加兼容性检查
+      const isHeaderButton = (target) => {
+        if (!target) return false;
+        
+        // 1. 首先尝试使用 closest（如果支持）
+        if (typeof target.closest === 'function') {
+          return target.closest('.header-btn') !== null;
+        }
+        
+        // 2. 后备方案：手动检查元素及其祖先
+        let element = target;
+        while (element && element !== document) {
+          if (element.classList && element.classList.contains('header-btn')) {
+            return true;
+          }
+          element = element.parentElement;
+        }
+        return false;
+      };
+
       // 如果是从按钮触发的事件，不要阻止
-      if (e.target.closest('.header-btn')) {
+      if (isHeaderButton(e.target)) {
         return;
       }
       e.stopPropagation();
@@ -325,22 +345,20 @@ class PopupManager {
   closePanel() {
     console.log('执行关闭操作');
     try {
-      const closeWindow = () => {
-        if (window.close) {
-          window.close();
-        }
-        if (window.top) {
-          window.top.close();
-        }
-        chrome.windows.getCurrent(window => {
-          chrome.windows.remove(window.id);
-        });
-      };
-
-      setTimeout(closeWindow, 100);
+      // 对于 Chrome 扩展的弹出窗口，直接使用 window.close() 即可
+      window.close();
     } catch (error) {
       console.error('关闭面板失败:', error);
-      window.close();
+      // 如果 window.close() 失败，尝试使用 Chrome API
+      try {
+        chrome.windows.getCurrent((window) => {
+          if (window.type === 'popup') {
+            chrome.windows.remove(window.id);
+          }
+        });
+      } catch (innerError) {
+        console.error('备用关闭方法也失败:', innerError);
+      }
     }
   }
 
