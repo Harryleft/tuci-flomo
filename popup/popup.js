@@ -3,6 +3,7 @@ import ConfigManager from '../services/ConfigManager.js';
 
 class PopupManager {
   constructor() {
+    console.log('PopupManager 构造函数被调用');
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.initialize());
     } else {
@@ -11,35 +12,44 @@ class PopupManager {
   }
 
   async initialize() {
-    try {
-      // 检查是否在 Side Panel 环境中
-      this.isSidePanel = chrome.runtime?.getManifest()?.side_panel !== undefined;
-      
-      // 如果不在 Side Panel 中，则打开 Side Panel
-      if (!this.isSidePanel) {
-        await this.openSidePanel();
-        return;
-      }
-      
+    try {      
+      console.log('开始初始化 PopupManager');
       await this.initElements();
       await this.loadSettings();
+      this.bindEventListeners();
+      this.preventAutoClose();
+      console.log('初始化完成');
     } catch (error) {
       console.error('初始化失败:', error);
+      this.showError('初始化失败，请刷新重试');
     }
   }
 
   async initElements() {
+    console.log('开始初始化元素');
     try {
-      // 初始化元素引用
-      this.wordInput = document.getElementById('wordInput');
-      this.generateBtn = document.getElementById('generateBtn');
-      this.descriptionContent = document.getElementById('sceneDescription');
-      this.submitBtn = document.getElementById('submitBtn');
-      this.settingsBtn = document.getElementById('settingsBtn');
-      this.closeBtn = document.getElementById('closeBtn');
+      // 使用更严格的选择器
+      const selectors = {
+        wordInput: '#wordInput',
+        generateBtn: '#generateBtn',
+        descriptionContent: '#sceneDescription',
+        submitBtn: '#submitBtn',
+        settingsBtn: '.header-btn[title="设置"]', // 更精确的选择器
+        closeBtn: '.header-btn[title="关闭"]'     // 更精确的选择器
+      };
 
-      // 绑定事件监听器
-      this.bindEventListeners();
+      // 查找所有元素
+      this.elements = {};
+      for (const [key, selector] of Object.entries(selectors)) {
+        const element = document.querySelector(selector);
+        if (!element) {
+          throw new Error(`找不到元素: ${key} (选择器: ${selector})`);
+        }
+        this.elements[key] = element;
+        console.log(`找到元素: ${key}`);
+      }
+
+      console.log('所有必需元素已找到:', Object.keys(this.elements));
     } catch (error) {
       console.error('初始化元素失败:', error);
       throw error;
@@ -47,42 +57,75 @@ class PopupManager {
   }
 
   bindEventListeners() {
-    // 生成按钮事件
-    if (this.generateBtn) {
-      this.generateBtn.addEventListener('click', () => this.handleGenerate());
-    }
+    console.log('开始绑定事件监听器');
+    const { settingsBtn, closeBtn, generateBtn, submitBtn } = this.elements;
 
-    // 提交按钮事件
-    if (this.submitBtn) {
-      this.submitBtn.addEventListener('click', () => this.handleSubmit());
-      this.submitBtn.disabled = true;  // 初始禁用提交按钮
-    }
+    if (settingsBtn) {
+      console.log('找到设置按钮，准备绑定事件');
+      
+      // 添加视觉反馈
+      settingsBtn.style.cursor = 'pointer';
+      
+      settingsBtn.addEventListener('click', (e) => {
+        console.log('设置按钮被点击');
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // 添加点击反馈
+        settingsBtn.classList.add('clicked');
+        setTimeout(() => settingsBtn.classList.remove('clicked'), 200);
 
-    // 设置按钮事件
-    if (this.settingsBtn) {
-      this.settingsBtn.addEventListener('click', () => {
-        chrome.runtime.openOptionsPage();
+        // 尝试打开选项页
+        try {
+          if (chrome.runtime.openOptionsPage) {
+            chrome.runtime.openOptionsPage(() => {
+              if (chrome.runtime.lastError) {
+                console.error('使用 openOptionsPage 失败:', chrome.runtime.lastError);
+                this.openOptionsPageFallback();
+              } else {
+                console.log('选项页面已打开');
+              }
+            });
+          } else {
+            console.log('openOptionsPage 不可用，使用后备方案');
+            this.openOptionsPageFallback();
+          }
+        } catch (error) {
+          console.error('打开设置页面时发生错误:', error);
+          this.showError('无法打开设置页面，请稍后重试');
+        }
       });
+      
+      console.log('设置按钮事件监听器已绑定');
+    } else {
+      console.error('设置按钮未找到，无法绑定事件');
     }
 
-    // 关闭按钮事件
-    if (this.closeBtn) {
-      this.closeBtn.addEventListener('click', () => this.closePanel());
-    } else {
-      console.error('关闭按钮未找到');
+    closeBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('关闭按钮被点击');
+      this.closePanel();
+    });
+
+    generateBtn?.addEventListener('click', () => this.handleGenerate());
+
+    if (submitBtn) {
+      submitBtn.addEventListener('click', () => this.handleSubmit());
+      submitBtn.disabled = true;
     }
+
+    console.log('事件监听器绑定完成');
   }
 
   async loadSettings() {
     try {
-      // 检查 API Key
       if (!await ConfigManager.hasValidAPIKey()) {
         this.showError('请先在设置页面配置 API Key');
-        this.generateBtn.disabled = true;
+        this.elements.generateBtn.disabled = true;
         return;
       }
 
-      // 加载场景设置
       const settings = await chrome.storage.sync.get({
         selectedScene: 'default',
         customScene: ''
@@ -96,7 +139,7 @@ class PopupManager {
   }
 
   async handleGenerate() {
-    const word = this.wordInput.value.trim();
+    const word = this.elements.wordInput.value.trim();
     if (!word) {
       console.warn('未输入单词');
       this.showError('请输入要记忆的单词');
@@ -105,16 +148,13 @@ class PopupManager {
 
     try {
       console.log('开始生成内容:', { word, scene: this.currentScene });
-      // 显示加载状态
       this.setGenerating(true);
-      this.descriptionContent.innerHTML = '<div class="loading">生成中...</div>';
+      this.elements.descriptionContent.innerHTML = '<div class="loading">生成中...</div>';
 
-      // 生成场景描述
       console.log('调用 API 生成描述...');
       const result = await APIClient.generateDescription(word, this.currentScene);
       console.log('描述生成成功:', result);
 
-      // 格式化显示内容
       const formattedContent = `
         <div class="word-section">
           <h3>📝 ${result.英语}</h3>
@@ -129,22 +169,20 @@ class PopupManager {
         </div>
       `;
       
-      this.descriptionContent.innerHTML = formattedContent;
+      this.elements.descriptionContent.innerHTML = formattedContent;
 
-      // 保存当前描述用于提交
       this.currentDescription = result;
 
-      // 启用提交按钮
-      this.submitBtn.disabled = false;
+      this.elements.submitBtn.disabled = false;
     } catch (error) {
       console.error('生成失败:', {
         error: error.message,
         stack: error.stack,
-        word: this.wordInput.value,
+        word: this.elements.wordInput.value,
         scene: this.currentScene
       });
       this.showError(error.message || '生成失败，请重试');
-      this.submitBtn.disabled = true;  // 生成失败时禁用提交按钮
+      this.elements.submitBtn.disabled = true;
     } finally {
       this.setGenerating(false);
     }
@@ -158,26 +196,22 @@ class PopupManager {
     }
 
     try {
-      // 显示提交状态
-      this.submitBtn.disabled = true;
-      this.submitBtn.innerHTML = `
+      this.elements.submitBtn.disabled = true;
+      this.elements.submitBtn.innerHTML = `
         <span class="btn__icon">📝</span>
         <span class="btn__text">提交中...</span>
       `;
 
-      // 提交到 Flomo
       await APIClient.submitToFlomo(this.currentDescription);
 
-      // 显示成功提示
       this.showSuccessStatus();
 
-      // 重置界面
       setTimeout(() => {
-        this.wordInput.value = '';
-        this.descriptionContent.innerHTML = '<div class="placeholder">输入单词并点击生成按钮，AI将为你创建生动的场景描述...</div>';
+        this.elements.wordInput.value = '';
+        this.elements.descriptionContent.innerHTML = '<div class="placeholder">输入单词并点击生成按钮，AI将为你创建生动的场景描述...</div>';
         this.currentDescription = null;
-        this.submitBtn.disabled = true;
-        this.submitBtn.innerHTML = `
+        this.elements.submitBtn.disabled = true;
+        this.elements.submitBtn.innerHTML = `
           <span class="btn__icon">📝</span>
           <span class="btn__text">提交到 Flomo</span>
         `;
@@ -186,20 +220,17 @@ class PopupManager {
     } catch (error) {
       console.error('提交失败:', error);
       
-      // 恢复提交按钮状态
-      this.submitBtn.disabled = false;
-      this.submitBtn.innerHTML = `
+      this.elements.submitBtn.disabled = false;
+      this.elements.submitBtn.innerHTML = `
         <span class="btn__icon">📝</span>
         <span class="btn__text">提交到 Flomo</span>
       `;
       
-      // 显示错误提示
       this.showError(error.message || '提交失败，请重试');
     }
   }
 
   formatDescription(text) {
-    // 将换行转换为 HTML 段落
     return text.split('\n')
       .filter(line => line.trim())
       .map(line => `<p>${line}</p>`)
@@ -207,16 +238,16 @@ class PopupManager {
   }
 
   setGenerating(isGenerating) {
-    this.generateBtn.disabled = isGenerating;
-    this.generateBtn.innerHTML = isGenerating ? 
+    this.elements.generateBtn.disabled = isGenerating;
+    this.elements.generateBtn.innerHTML = isGenerating ? 
       '<span>生成中...</span>' : 
-      '<span>✨ 生成</span>';
+      '<span class="generate-btn__text">生成</span><span class="generate-btn__icon">✨</span>';
   }
 
   showError(message) {
     console.warn('显示错误:', message);
-    if (this.descriptionContent) {
-      this.descriptionContent.innerHTML = `
+    if (this.elements.descriptionContent) {
+      this.elements.descriptionContent.innerHTML = `
         <div class="error-message">
           <span class="error-icon">⚠️</span>
           <span>${message}</span>
@@ -226,7 +257,7 @@ class PopupManager {
   }
 
   showSuccess(message) {
-    this.descriptionContent.innerHTML = `
+    this.elements.descriptionContent.innerHTML = `
       <div class="success-message">
         <span class="success-icon">✅</span>
         <span>${message}</span>
@@ -235,13 +266,11 @@ class PopupManager {
   }
 
   showSuccessStatus() {
-    // 移除已存在的提示
     const existingStatus = document.getElementById('submitStatus');
     if (existingStatus) {
       existingStatus.remove();
     }
     
-    // 创建新的提示元素
     const statusEl = document.createElement('div');
     statusEl.id = 'submitStatus';
     statusEl.className = 'submit-status';
@@ -250,92 +279,109 @@ class PopupManager {
       <span class="submit-status__text">已保存</span>
     `;
     
-    // 添加到 body 末尾
     document.body.appendChild(statusEl);
     
-    // 强制重绘
     void statusEl.offsetWidth;
     
-    // 显示提示
     statusEl.classList.add('submit-status--success');
     
-    // 1秒后开始消失动画
     setTimeout(() => {
       statusEl.classList.add('submit-status--hide');
       
-      // 动画结束后移除元素
       statusEl.addEventListener('animationend', () => {
         statusEl.remove();
       }, { once: true });
     }, 1000);
   }
 
-  // 添加阻止自动关闭的方法
   preventAutoClose() {
-    // 移除原有的 blur 事件监听，因为它可能会干扰正常的交互
-    
-    // 1. 阻止点击事件冒泡
-    document.addEventListener('click', (e) => {
+    // 只阻止特定的关闭行为
+    const preventClose = (e) => {
+      // 如果是从按钮触发的事件，不要阻止
+      if (e.target.closest('.header-btn')) {
+        return;
+      }
       e.stopPropagation();
-    }, true);
+    };
+
+    document.addEventListener('click', preventClose, true);
+    document.addEventListener('mouseleave', preventClose, true);
     
-    // 2. 阻止鼠标离开事件
-    document.addEventListener('mouseleave', (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-    }, true);
-    
-    // 3. 阻止失焦事件
-    document.addEventListener('blur', (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-    }, true);
-    
-    // 4. 阻止 visibilitychange 事件
+    // 移除过于激进的焦点控制
     document.addEventListener('visibilitychange', (e) => {
-      e.stopPropagation();
-      e.preventDefault();
       if (document.visibilityState === 'hidden') {
-        document.visibilityState = 'visible';
+        console.log('窗口失去焦点');
       }
-    }, true);
-    
-    // 5. 保持焦点在窗口内
-    setInterval(() => {
-      if (!document.hasFocus()) {
-        window.focus();
-      }
-    }, 100);
-    
-    // 6. 阻止 ESC 键关闭
+    });
+
+    // 只阻止 ESC 键
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        e.stopPropagation();
         e.preventDefault();
       }
-    }, true);
+    });
   }
 
-  // 修改关闭面板方法
   closePanel() {
-    if (this.isSidePanel) {
-      chrome.sidePanel.close();
-    } else {
+    console.log('执行关闭操作');
+    try {
+      const closeWindow = () => {
+        if (window.close) {
+          window.close();
+        }
+        if (window.top) {
+          window.top.close();
+        }
+        chrome.windows.getCurrent(window => {
+          chrome.windows.remove(window.id);
+        });
+      };
+
+      setTimeout(closeWindow, 100);
+    } catch (error) {
+      console.error('关闭面板失败:', error);
       window.close();
     }
   }
 
-  async openSidePanel() {
+  // 添加后备方案方法
+  openOptionsPageFallback() {
+    console.log('使用后备方案打开选项页');
     try {
-      // 打开 Side Panel
-      await chrome.sidePanel.open();
-      // 关闭当前 popup
-      window.close();
+      const optionsUrl = chrome.runtime.getURL('options/options.html');
+      console.log('选项页 URL:', optionsUrl);
+      
+      chrome.tabs.create({ url: optionsUrl }, (tab) => {
+        if (chrome.runtime.lastError) {
+          console.error('创建选项页标签失败:', chrome.runtime.lastError);
+          this.showError('无法打开设置页面');
+        } else {
+          console.log('选项页已在新标签页打开:', tab);
+        }
+      });
     } catch (error) {
-      console.error('打开 Side Panel 失败:', error);
+      console.error('后备方案失败:', error);
+      this.showError('无法打开设置页面，请稍后重试');
     }
   }
 }
 
-// 初始化
-new PopupManager(); 
+console.log('准备初始化 PopupManager');
+const popupManager = new PopupManager();
+
+window.addEventListener('error', (event) => {
+  console.error('全局错误:', event.error);
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'error-message';
+  errorDiv.innerHTML = `
+    <span class="error-icon">⚠️</span>
+    <span>发生错误，请刷新页面重试</span>
+  `;
+  document.body.appendChild(errorDiv);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('未处理的 Promise 拒绝:', event.reason);
+});
+
+export default popupManager; 
