@@ -12,11 +12,25 @@ class PopupManager {
   }
 
   async initialize() {
-    try {      
+    try {
       console.log('开始初始化 PopupManager');
+      
+      // 先检查 API Key
+      const hasAPIKey = await ConfigManager.hasValidAPIKey();
+      console.log('API Key 状态:', hasAPIKey);
+      
       await this.initElements();
       await this.loadSettings();
       this.bindEventListeners();
+      
+      // 根据 API Key 状态设置按钮
+      if (!hasAPIKey) {
+        this.elements.generateBtn.disabled = true;
+        this.showError('请先在设置页面配置 API Key');
+      } else {
+        this.elements.generateBtn.disabled = false;
+      }
+      
       this.preventAutoClose();
       console.log('初始化完成');
     } catch (error) {
@@ -108,7 +122,30 @@ class PopupManager {
       this.closePanel();
     });
 
-    generateBtn?.addEventListener('click', () => this.handleGenerate());
+    if (generateBtn) {
+      console.log('找到生成按钮，准备绑定事件');
+      generateBtn.addEventListener('click', async (e) => {
+        console.log('生成按钮被点击，按钮状态:', {
+          disabled: generateBtn.disabled,
+          classList: Array.from(generateBtn.classList)
+        });
+        
+        if (generateBtn.disabled) {
+          console.warn('按钮已被禁用');
+          return;
+        }
+
+        try {
+          await this.handleGenerate();
+        } catch (error) {
+          console.error('生成处理失败:', error);
+          this.showError('生成失败，请重试');
+        }
+      });
+      console.log('生成按钮事件监听器已绑定');
+    } else {
+      console.error('生成按钮未找到');
+    }
 
     if (submitBtn) {
       submitBtn.addEventListener('click', () => this.handleSubmit());
@@ -140,6 +177,8 @@ class PopupManager {
 
   async handleGenerate() {
     const word = this.elements.wordInput.value.trim();
+    console.log('开始处理生成请求:', { word });
+
     if (!word) {
       console.warn('未输入单词');
       this.showError('请输入要记忆的单词');
@@ -295,51 +334,15 @@ class PopupManager {
   }
 
   preventAutoClose() {
-    // 只阻止特定的关闭行为
     const preventClose = (e) => {
-      // 添加兼容性检查
-      const isHeaderButton = (target) => {
-        if (!target) return false;
-        
-        // 1. 首先尝试使用 closest（如果支持）
-        if (typeof target.closest === 'function') {
-          return target.closest('.header-btn') !== null;
-        }
-        
-        // 2. 后备方案：手动检查元素及其祖先
-        let element = target;
-        while (element && element !== document) {
-          if (element.classList && element.classList.contains('header-btn')) {
-            return true;
-          }
-          element = element.parentElement;
-        }
-        return false;
-      };
-
-      // 如果是从按钮触发的事件，不要阻止
-      if (isHeaderButton(e.target)) {
+      // 检查是否是功能按钮
+      if (e.target.closest('button[id]')) {  // 任何有 ID 的按钮都不阻止
         return;
       }
       e.stopPropagation();
     };
 
     document.addEventListener('click', preventClose, true);
-    document.addEventListener('mouseleave', preventClose, true);
-    
-    // 移除过于激进的焦点控制
-    document.addEventListener('visibilitychange', (e) => {
-      if (document.visibilityState === 'hidden') {
-        console.log('窗口失去焦点');
-      }
-    });
-
-    // 只阻止 ESC 键
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-      }
-    });
   }
 
   closePanel() {
