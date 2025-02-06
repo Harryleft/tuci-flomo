@@ -264,15 +264,27 @@
 
 /* 占位提示样式 */
 .result-section__placeholder {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-xl);
-  color: var(--text-secondary);
-  font-size: 14px;
+  height: 100%;
+  min-height: 200px;  /* 确保有足够的高度 */
+  padding: var(--spacing-lg);
   text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
   line-height: 1.6;
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* 加载状态 */
