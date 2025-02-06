@@ -1,7 +1,7 @@
 /* 头部区域 */
 .side-panel__header {
   padding: 20px var(--spacing-lg);
-  background: var(--bg-primary);
+  background: linear-gradient(135deg, rgb(232, 243, 232) 0%, rgb(245, 249, 245) 100%);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -23,7 +23,7 @@
 }
 
 .side-panel__logo-icon {
-  font-size: 22px;
+  font-size: 16px;
   line-height: 1;
   display: flex;
   align-items: center;
@@ -77,11 +77,39 @@
 
 /* 关闭按钮特殊样式 */
 .header-btn[title="关闭"] {
-  font-size: 20px;
-  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-btn[title="关闭"] svg {
+  width: 20px;
+  height: 20px;
+  transition: all 0.2s ease;
+}
+
+.header-btn[title="关闭"]:hover {
+  background-color: rgba(255, 59, 48, 0.1); /* 红色背景，低透明度 */
+  color: rgb(255, 59, 48); /* 纯红色图标 */
+}
+
+.header-btn[title="关闭"]:hover svg {
+  transform: scale(1.1);
 }
 
 /* 设置按钮特殊样式 */
-.header-btn[title="设置"]:hover {
+.header-btn[title="设置"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-btn[title="设置"] svg {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+.header-btn[title="设置"]:hover svg {
   transform: rotate(30deg);
 } 

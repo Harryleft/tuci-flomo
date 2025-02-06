@@ -12,7 +12,8 @@
 /* 组件 */
 @import 'components/_buttons.css';
 @import 'components/_inputs.css';
-@import './components/_result-section.css';
+@import 'components/_result-section.css';
+@import 'components/_logo.css';
 
 /* 响应式设计 */
 @media (max-width: 768px) {
@@ -64,4 +65,36 @@
 
 .header-btn.clicked {
   transform: scale(0.9);
+}
+
+.side-panel__logo-text {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 20px;
+  letter-spacing: 0.5px;
+}
+
+.logo-text-main {
+  font-weight: 600;
+  color: #333;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.logo-text-sub {
+  color: #35b26d; /* flomo的品牌绿色 */
+  font-weight: 500;
+  font-size: 0.9em;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* 添加悬停效果 */
+.side-panel__logo:hover .logo-text-main {
+  color: #35b26d;
+  transition: color 0.2s ease;
+}
+
+.side-panel__logo:hover .logo-text-sub {
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
 } 

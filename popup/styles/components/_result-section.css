@@ -81,4 +81,49 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* 结果卡片基础样式 */
+.result-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 
+    0 2px 4px rgba(31, 35, 41, 0.03),
+    0 4px 12px rgba(31, 35, 41, 0.07);
+  padding: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(231, 235, 239, 0.8);
+}
+
+/* 悬停效果 */
+.result-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 4px 8px rgba(31, 35, 41, 0.05),
+    0 8px 16px rgba(31, 35, 41, 0.1);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+/* 结果卡片内容样式 */
+.result-section__placeholder {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+  opacity: 0.8;
+}
+
+/* 生成内容的动画效果 */
+.result-card.generated {
+  animation: cardFadeIn 0.4s ease-out;
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 } 
