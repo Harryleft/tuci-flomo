@@ -4,92 +4,60 @@
   height: calc(100vh - var(--header-height) - var(--footer-height));
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-md);
+  padding: var(--spacing-lg);
   background: var(--bg-secondary);
-  gap: var(--spacing-md);
+  gap: var(--spacing-lg);
 }
 
-/* 输入区域 */
+/* 输入区域容器 */
 .input-section__wrapper {
-  position: relative;
+  width: 100%;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm);
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
+  border: 1px solid transparent;
   transition: all var(--transition-fast);
 }
 
-/* 输入框聚焦时的提示 */
-.input-section__wrapper::after {
-  content: '按下回车或点击生成按钮开始';
-  position: absolute;
-  bottom: -24px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 12px;
-  color: var(--text-secondary);
-  opacity: 0;
-  transition: opacity var(--transition-fast);
-}
-
-.input-section__wrapper:focus-within::after {
-  opacity: 0.8;
-}
-
+/* 输入框样式 */
 .input-section__input {
   flex: 1;
-  height: 36px;
-  padding: 0 var(--spacing-sm);
+  min-height: 36px; /* 增加输入框高度 */
+  padding: var(--spacing-md);
   border: none;
-  background: transparent;
-  font-size: 0.95rem;
+  background: var(--bg-primary);
+  font-size: 1rem;
   color: var(--text-primary);
+  border-radius: var(--radius-md);
+  resize: none; /* 禁用调整大小 */
   outline: none;
+  line-height: 1.6;
 }
 
 .input-section__input::placeholder {
   color: var(--text-secondary);
-  opacity: 0.8;
+  opacity: 0.6;
 }
 
 /* 生成按钮 */
 .generate-btn {
-  position: relative;
+  align-self: flex-end; /* 按钮靠右下对齐 */
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border: none;
   border-radius: var(--radius-md);
   background: var(--accent-color);
   color: white;
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
-  overflow: hidden;
-}
-
-/* 生成按钮点击波纹效果 */
-.generate-btn::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  opacity: 0;
-  transition: transform 0.4s, opacity 0.4s;
-}
-
-.generate-btn:active::after {
-  transform: translate(-50%, -50%) scale(2);
-  opacity: 1;
 }
 
 .generate-btn:hover {
@@ -101,40 +69,180 @@
   transform: translateY(0);
 }
 
-/* 结果展示区域 - 使用 Grid 布局 */
+/* 输入框聚焦状态 */
+.input-section__input:focus {
+  box-shadow: var(--shadow-sm);
+}
+
+/* 禁用状态 */
+.input-section__input:disabled {
+  background: var(--bg-disabled);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.generate-btn:disabled {
+  background: var(--bg-disabled);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* 加载状态 */
+.generate-btn.loading {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.generate-btn.loading .generate-btn__icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 结果展示区域 */
 .result-section {
   flex: 1;
-  display: grid;
-  grid-template-rows: minmax(100px, auto) minmax(150px, 1fr); /* 文本区域自适应，图片区域最小150px */
-  gap: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
   background: var(--bg-primary);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  overflow: auto; /* 改为可滚动 */
   padding: var(--spacing-md);
-  overflow: hidden;
 }
 
-/* 文本描述区域 */
+/* 文本展示区域 */
 .result-section__text {
-  min-height: 0; /* 允许内容区域收缩 */
-  overflow-y: auto; /* 内容过多时可滚动 */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
+/* 结果卡片 */
 .result-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   background: var(--bg-secondary);
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
 }
 
-/* 图片展示区域 */
-.result-section__image {
-  min-height: 150px; /* 保证最小高度 */
+/* 结果内容 */
+.result-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  animation: slideIn 0.3s ease forwards;
+}
+
+/* 单词部分 */
+.word-section {
+  text-align: center;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.word-section__header h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* 助记拆解和场景描述的容器 */
+.section-content {
+  position: relative;
+  padding: var(--spacing-xl) var(--spacing-md) var(--spacing-md);
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.section-content:not(:last-child) {
+  margin-bottom: var(--spacing-md);
+}
+
+/* 标签样式 */
+.section-label {
+  position: absolute;
+  top: -10px;
+  left: var(--spacing-md);
+  padding: 4px 12px;
+  background: var(--accent-color);
+  color: white;
+  font-size: 12px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+/* 内容文本样式 */
+.section-content p {
+  margin: var(--spacing-md) 0 0;
+  line-height: 1.6;
+  color: var(--text-primary);
+  font-size: 14px;
+  word-break: break-word; /* 防止文字溢出 */
+}
+
+/* 占位提示样式 */
+.result-section__placeholder {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: var(--spacing-xl);
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* 加载状态 */
+.loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  color: var(--text-secondary);
   background: var(--bg-secondary);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
+}
+
+/* 底部区域 */
+.side-panel__footer {
   padding: var(--spacing-md);
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+}
+
+/* 提交按钮 */
+.btn--submit {
+  width: 100%;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  background: var(--accent-color);
+  color: white;
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.btn--submit:not(:disabled):hover {
+  background: var(--accent-color-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 /* 即将推出提示样式 */
@@ -180,106 +288,6 @@
   }
 }
 
-/* 生成结果样式 */
-.word-section {
-  margin-bottom: var(--spacing-lg);
-}
-
-.word-section__header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.word-section__header h3 {
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-/* 内容区块通用样式 */
-.section-content {
-  position: relative;
-  padding: var(--spacing-md);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--spacing-md);
-  transition: transform var(--transition-fast);
-}
-
-.section-content:hover {
-  transform: translateY(-2px);
-}
-
-.section-label {
-  position: absolute;
-  top: -10px;
-  left: var(--spacing-md);
-  padding: 2px 8px;
-  background: var(--accent-color);
-  color: white;
-  font-size: 12px;
-  border-radius: 12px;
-  font-weight: 500;
-  transform-origin: left center;
-  animation: popIn 0.3s ease forwards;
-}
-
-@keyframes popIn {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* 内容文本样式 */
-.section-content p {
-  margin: var(--spacing-sm) 0 0;
-  line-height: 1.6;
-  color: var(--text-primary);
-  font-size: 14px;
-}
-
-/* 加载状态优化 */
-.loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 200px;
-  color: var(--text-secondary);
-  font-size: 14px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-.loading::before {
-  content: '';
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--accent-color);
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 /* 错误提示优化 */
 .error-message {
   margin: var(--spacing-md);
@@ -297,13 +305,6 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-}
-
-/* 结果区域动画 */
-.result-card__content {
-  opacity: 0;
-  transform: translateY(10px);
-  animation: slideIn 0.3s ease forwards;
 }
 
 @keyframes slideIn {
