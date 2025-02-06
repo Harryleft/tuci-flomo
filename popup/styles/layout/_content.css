@@ -296,69 +296,89 @@
   border-top: 1px solid var(--border-color);
 }
 
-/* 提交按钮 */
+/* 提交按钮基础样式 */
 .btn--submit {
   width: 100%;
-  height: 44px; /* 增加高度使按钮更突出 */
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   padding: 0 var(--spacing-lg);
   border: none;
-  border-radius: 22px; /* 使用更大的圆角 */
-  background: var(--accent-color);
-  color: white;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-  box-shadow: 0 2px 8px rgba(var(--accent-color-rgb), 0.3);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-}
-
-/* 悬浮状态 */
-.btn--submit:not(:disabled):hover {
-  background: var(--accent-color-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(var(--accent-color-rgb), 0.4);
-}
-
-/* 点击状态 */
-.btn--submit:not(:disabled):active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(var(--accent-color-rgb), 0.2);
-}
-
-/* 禁用状态 */
-.btn--submit:disabled {
-  background: var(--bg-disabled);
-  color: var(--text-disabled);
-  cursor: not-allowed;
-  box-shadow: none;
-  opacity: 0.7;
-}
-
-/* 按钮图标 */
-.btn--submit .btn__icon {
-  font-size: 18px;
-  transition: transform 0.2s ease;
-}
-
-/* 按钮文本 */
-.btn--submit .btn__text {
   position: relative;
-  top: 1px; /* 微调文本垂直对齐 */
 }
 
-/* 加载状态 */
-.btn--submit.loading {
+/* 默认状态 */
+.btn--submit-default {
+  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+  color: var(--text-secondary);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* 就绪状态 */
+.btn--submit-ready {
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-color-dark) 100%);
+  color: white;
+  box-shadow: 
+    0 2px 8px rgba(var(--accent-color-rgb), 0.3),
+    0 0 0 2px rgba(var(--accent-color-rgb), 0.1);
+}
+
+.btn--submit-ready:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 4px 12px rgba(var(--accent-color-rgb), 0.4),
+    0 0 0 3px rgba(var(--accent-color-rgb), 0.15);
+}
+
+/* 提交中状态 */
+.btn--submit-submitting {
+  background: linear-gradient(135deg, var(--accent-color-dark) 0%, var(--accent-color) 100%);
+  color: white;
+  cursor: wait;
+}
+
+.btn--submit-submitting .btn__icon {
+  animation: submitSpin 1.5s linear infinite;
+}
+
+/* 成功状态 */
+.btn--submit-success {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: white;
+  cursor: default;
+}
+
+/* 提示文本 */
+.btn--submit::before {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(5px);
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 12px;
+  border-radius: 4px;
+  white-space: nowrap;
   pointer-events: none;
-  opacity: 0.8;
+  opacity: 0;
+  transition: all 0.2s ease;
 }
 
-.btn--submit.loading .btn__icon {
-  animation: spin 1s linear infinite;
+.btn--submit:hover::before {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* 即将推出提示样式 */

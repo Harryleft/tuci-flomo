@@ -31,6 +31,9 @@ class PopupManager {
         this.elements.generateBtn.disabled = false;
       }
       
+      // 初始化提交按钮状态
+      this.updateSubmitButtonState(false);
+      
       this.preventAutoClose();
       console.log('初始化完成');
     } catch (error) {
@@ -149,7 +152,6 @@ class PopupManager {
 
     if (submitBtn) {
       submitBtn.addEventListener('click', () => this.handleSubmit());
-      submitBtn.disabled = true;
     }
 
     // 添加输入框事件监听
@@ -291,12 +293,13 @@ class PopupManager {
         await this.typewriterEffect(element, text);
       }
 
-      // 启用提交按钮
-      this.elements.submitBtn.disabled = false;
+      // 生成成功后更新按钮状态
+      this.updateSubmitButtonState('ready');
 
     } catch (error) {
       console.error('生成失败:', error);
       this.showError(error.message || '生成失败，请重试');
+      this.updateSubmitButtonState('default');
     } finally {
       // 恢复按钮状态，添加过渡动画
       const generateBtn = this.elements.generateBtn;
@@ -317,42 +320,28 @@ class PopupManager {
 
   async handleSubmit() {
     if (!this.currentDescription) {
-      console.warn('没有可提交的内容');
       this.showError('请先生成内容');
       return;
     }
 
     try {
-      this.elements.submitBtn.disabled = true;
-      this.elements.submitBtn.innerHTML = `
-        <span class="btn__icon">📝</span>
-        <span class="btn__text">提交中...</span>
-      `;
-
+      this.updateSubmitButtonState('submitting');
       await APIClient.submitToFlomo(this.currentDescription);
-
+      
+      // 提交成功
+      this.updateSubmitButtonState('success');
       this.showSuccessStatus();
 
+      // 延迟重置状态
       setTimeout(() => {
         this.elements.wordInput.value = '';
         this.elements.descriptionContent.innerHTML = '<div class="placeholder">输入单词并点击生成按钮，AI将为你创建生动的场景描述...</div>';
         this.currentDescription = null;
-        this.elements.submitBtn.disabled = true;
-        this.elements.submitBtn.innerHTML = `
-          <span class="btn__icon">📝</span>
-          <span class="btn__text">提交到 Flomo</span>
-        `;
-      }, 1000);
+        this.updateSubmitButtonState('default');
+      }, 1500);
 
     } catch (error) {
-      console.error('提交失败:', error);
-      
-      this.elements.submitBtn.disabled = false;
-      this.elements.submitBtn.innerHTML = `
-        <span class="btn__icon">📝</span>
-        <span class="btn__text">提交到 Flomo</span>
-      `;
-      
+      this.updateSubmitButtonState('ready');
       this.showError(error.message || '提交失败，请重试');
     }
   }
@@ -472,6 +461,53 @@ class PopupManager {
       console.error('后备方案失败:', error);
       this.showError('无法打开设置页面，请稍后重试');
     }
+  }
+
+  // 更新提交按钮状态的方法
+  updateSubmitButtonState(state = 'default') {
+    if (!this.elements.submitBtn) return;
+
+    const states = {
+      default: {
+        disabled: true,
+        icon: '📝',
+        text: '提交到 Flomo',
+        hint: '生成内容后即可提交',
+        class: 'btn--submit-default'
+      },
+      ready: {
+        disabled: false,
+        icon: '📝',
+        text: '提交到 Flomo',
+        hint: '点击提交到 Flomo',
+        class: 'btn--submit-ready'
+      },
+      submitting: {
+        disabled: true,
+        icon: '⏳',
+        text: '正在提交...',
+        hint: '正在保存到 Flomo',
+        class: 'btn--submit-submitting'
+      },
+      success: {
+        disabled: true,
+        icon: '✅',
+        text: '提交成功',
+        hint: '已保存到 Flomo',
+        class: 'btn--submit-success'
+      }
+    };
+
+    const config = states[state];
+    const btn = this.elements.submitBtn;
+
+    btn.disabled = config.disabled;
+    btn.className = `btn btn--submit ${config.class}`;
+    btn.title = config.hint;
+    btn.innerHTML = `
+      <span class="btn__icon">${config.icon}</span>
+      <span class="btn__text">${config.text}</span>
+    `;
   }
 }
 
