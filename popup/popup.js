@@ -225,6 +225,9 @@ class PopupManager {
 
       const result = await APIClient.generateDescription(word, this.currentScene);
 
+      // 保存当前描述，用于提交到 Flomo
+      this.currentDescription = result;
+
       // 创建结果容器
       const formattedContent = `
         <div class="result-card__content">
@@ -259,6 +262,9 @@ class PopupManager {
         element.textContent = '';
         await this.typewriterEffect(element, text);
       }
+
+      // 启用提交按钮
+      this.elements.submitBtn.disabled = false;
 
     } catch (error) {
       console.error('生成失败:', error);
