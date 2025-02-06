@@ -290,19 +290,66 @@
 /* 提交按钮 */
 .btn--submit {
   width: 100%;
-  padding: var(--spacing-md);
-  border-radius: var(--radius-lg);
+  height: 44px; /* 增加高度使按钮更突出 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 var(--spacing-lg);
+  border: none;
+  border-radius: 22px; /* 使用更大的圆角 */
   background: var(--accent-color);
   color: white;
+  font-size: 15px;
   font-weight: 500;
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-fast);
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 8px rgba(var(--accent-color-rgb), 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
+/* 悬浮状态 */
 .btn--submit:not(:disabled):hover {
   background: var(--accent-color-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--accent-color-rgb), 0.4);
+}
+
+/* 点击状态 */
+.btn--submit:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(var(--accent-color-rgb), 0.2);
+}
+
+/* 禁用状态 */
+.btn--submit:disabled {
+  background: var(--bg-disabled);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.7;
+}
+
+/* 按钮图标 */
+.btn--submit .btn__icon {
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+
+/* 按钮文本 */
+.btn--submit .btn__text {
+  position: relative;
+  top: 1px; /* 微调文本垂直对齐 */
+}
+
+/* 加载状态 */
+.btn--submit.loading {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.btn--submit.loading .btn__icon {
+  animation: spin 1s linear infinite;
 }
 
 /* 即将推出提示样式 */
