@@ -195,16 +195,26 @@ class PopupManager {
       console.log('描述生成成功:', result);
 
       const formattedContent = `
-        <div class="word-section">
-          <h3>📝 ${result.英语}</h3>
-        </div>
-        <div class="memory-section">
-          <p><strong>💡 助记拆解：</strong></p>
-          <p>${result.关键词}</p>
-        </div>
-        <div class="scene-section">
-          <p><strong>🌟 场景描述：</strong></p>
-          <p>${result.图像描述}</p>
+        <div class="result-card__content">
+          <div class="word-section">
+            <div class="word-section__header">
+              <h3>${result.英语}</h3>
+            </div>
+          </div>
+          
+          <div class="memory-section">
+            <div class="section-content">
+              <div class="section-label">助记拆解</div>
+              <p>${result.关键词}</p>
+            </div>
+          </div>
+          
+          <div class="scene-section">
+            <div class="section-content">
+              <div class="section-label">场景描述</div>
+              <p>${result.图像描述}</p>
+            </div>
+          </div>
         </div>
       `;
       

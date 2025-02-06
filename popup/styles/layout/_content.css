@@ -147,46 +147,72 @@
 
 /* 生成结果样式 */
 .word-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.word-section__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.word-section__header h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* 内容区块通用样式 */
+.section-content {
+  position: relative;
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
   margin-bottom: var(--spacing-md);
 }
 
-.word-section h3 {
-  font-size: 18px;
-  color: var(--text-primary);
-  margin-bottom: var(--spacing-sm);
+.section-label {
+  position: absolute;
+  top: -10px;
+  left: var(--spacing-md);
+  padding: 2px 8px;
+  background: var(--accent-color);
+  color: white;
+  font-size: 12px;
+  border-radius: 12px;
+  font-weight: 500;
 }
 
-.memory-section,
-.scene-section {
-  margin-bottom: var(--spacing-md);
-}
-
-.memory-section p,
-.scene-section p {
-  color: var(--text-primary);
+/* 内容文本样式 */
+.section-content p {
+  margin: var(--spacing-sm) 0 0;
   line-height: 1.6;
-  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+  font-size: 14px;
 }
 
-/* 加载状态 */
+/* 加载状态优化 */
 .loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  height: 200px;
   color: var(--text-secondary);
   font-size: 14px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
 }
 
-/* 错误提示 */
+/* 错误提示优化 */
 .error-message {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
+  margin: var(--spacing-md);
   padding: var(--spacing-md);
   background: var(--error-bg);
   border-radius: var(--radius-md);
   color: var(--error-text);
+  font-size: 14px;
+  text-align: center;
 }
 
 /* 移除任何可能影响高度计算的样式 */
