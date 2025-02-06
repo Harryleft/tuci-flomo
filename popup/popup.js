@@ -177,23 +177,28 @@ class PopupManager {
 
   async handleGenerate() {
     const word = this.elements.wordInput.value.trim();
-    console.log('开始处理生成请求:', { word });
-
+    
     if (!word) {
-      console.warn('未输入单词');
+      // 添加输入框抖动效果
+      this.elements.wordInput.classList.add('shake');
+      setTimeout(() => this.elements.wordInput.classList.remove('shake'), 500);
       this.showError('请输入要记忆的单词');
       return;
     }
 
     try {
-      console.log('开始生成内容:', { word, scene: this.currentScene });
       this.setGenerating(true);
-      this.elements.descriptionContent.innerHTML = '<div class="loading">生成中...</div>';
+      
+      // 显示加载动画
+      this.elements.descriptionContent.innerHTML = `
+        <div class="loading">
+          <span>正在生成内容...</span>
+        </div>
+      `;
 
-      console.log('调用 API 生成描述...');
       const result = await APIClient.generateDescription(word, this.currentScene);
-      console.log('描述生成成功:', result);
 
+      // 使用动画展示结果
       const formattedContent = `
         <div class="result-card__content">
           <div class="word-section">
@@ -217,21 +222,18 @@ class PopupManager {
           </div>
         </div>
       `;
-      
-      this.elements.descriptionContent.innerHTML = formattedContent;
 
-      this.currentDescription = result;
+      // 平滑过渡到结果
+      this.elements.descriptionContent.style.opacity = '0';
+      setTimeout(() => {
+        this.elements.descriptionContent.innerHTML = formattedContent;
+        this.elements.descriptionContent.style.opacity = '1';
+      }, 300);
 
       this.elements.submitBtn.disabled = false;
     } catch (error) {
-      console.error('生成失败:', {
-        error: error.message,
-        stack: error.stack,
-        word: this.elements.wordInput.value,
-        scene: this.currentScene
-      });
+      console.error('生成失败:', error);
       this.showError(error.message || '生成失败，请重试');
-      this.elements.submitBtn.disabled = true;
     } finally {
       this.setGenerating(false);
     }
