@@ -26,16 +26,15 @@
 /* 输入框样式 */
 .input-section__input {
   flex: 1;
-  min-height: 36px; /* 增加输入框高度 */
-  padding: var(--spacing-md);
+  height: 36px; /* 明确设置高度 */
+  padding: 0 var(--spacing-md); /* 调整内边距 */
   border: none;
   background: var(--bg-primary);
   font-size: 1rem;
   color: var(--text-primary);
   border-radius: var(--radius-md);
-  resize: none; /* 禁用调整大小 */
   outline: none;
-  line-height: 1.6;
+  line-height: 36px; /* 与高度保持一致 */
 }
 
 .input-section__input::placeholder {
@@ -45,11 +44,14 @@
 
 /* 生成按钮 */
 .generate-btn {
-  align-self: flex-end; /* 按钮靠右下对齐 */
+  align-self: stretch; /* 改为拉伸以匹配输入框高度 */
   display: flex;
   align-items: center;
+  justify-content: center; /* 居中内容 */
   gap: 6px;
-  padding: 10px 20px;
+  min-width: 100px; /* 设置最小宽度 */
+  height: 36px; /* 与输入框高度保持一致 */
+  padding: 0 var(--spacing-md); /* 调整水平内边距 */
   border: none;
   border-radius: var(--radius-md);
   background: var(--accent-color);
@@ -87,19 +89,46 @@
   opacity: 0.8;
 }
 
-/* 加载状态 */
+/* 生成按钮加载状态 */
 .generate-btn.loading {
+  height: 36px; /* 确保加载状态下高度一致 */
+  min-width: 100px; /* 保持最小宽度 */
   pointer-events: none;
   opacity: 0.8;
+  background: var(--accent-color-dark);
 }
 
+.generate-btn.loading .generate-btn__text,
 .generate-btn.loading .generate-btn__icon {
-  animation: spin 1s linear infinite;
+  display: none;
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.generate-btn.loading::after {
+  content: '生成中...';
+}
+
+/* 加载状态容器 */
+.loading-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.loading-container__icon {
+  font-size: 24px;
+  animation: bounce 1s ease infinite;
+}
+
+.loading-container__text {
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 /* 结果展示区域 */
@@ -316,4 +345,21 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* 动画效果 */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 } 
