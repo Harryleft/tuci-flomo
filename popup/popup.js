@@ -71,6 +71,27 @@ class PopupManager {
       }
 
       console.log('所有必需元素已找到:', Object.keys(this.elements));
+
+      // 添加键盘事件监听
+      this.elements.wordInput.addEventListener('keydown', (e) => {
+        // 检查是否按下了 Shift + Enter
+        if (e.key === 'Enter' && e.shiftKey) {
+          e.preventDefault(); // 阻止默认行为
+          
+          // 如果提交按钮可用，则触发提交
+          if (!this.elements.submitBtn.disabled) {
+            this.handleSubmit();
+          }
+        } 
+        // 普通回车键生成
+        else if (e.key === 'Enter' && !e.shiftKey && e.target.value.trim()) {
+          e.preventDefault();
+          
+          if (!this.elements.generateBtn.disabled) {
+            this.handleGenerate();
+          }
+        }
+      });
     } catch (error) {
       console.error('初始化元素失败:', error);
       throw error;
@@ -447,22 +468,26 @@ class PopupManager {
     const states = {
       default: {
         disabled: true,
+        icon: '📝',
         text: '提交到 Flomo',
         class: 'btn--submit-default'
       },
       ready: {
         disabled: false,
+        icon: '📝',
         text: '提交到 Flomo',
         class: 'btn--submit-ready'
       },
       submitting: {
         disabled: true,
+        icon: '⏳',
         text: '提交中...',
         class: 'btn--submit-submitting'
       },
       success: {
         disabled: true,
-        text: '✅ 已提交',
+        icon: '✅',
+        text: '已提交',
         class: 'btn--submit-success'
       }
     };
@@ -472,8 +497,11 @@ class PopupManager {
     // 重置按钮状态
     submitBtn.disabled = config.disabled;
     submitBtn.className = `btn btn--submit ${config.class}`;
-    submitBtn.textContent = config.text;
-    submitBtn.removeAttribute('title');  // 确保移除 title 属性
+    // 使用 innerHTML 来保持 HTML 结构
+    submitBtn.innerHTML = `
+      <span class="btn__icon">${config.icon}</span>
+      <span class="btn__text">${config.text}</span>
+    `;
   }
 }
 
