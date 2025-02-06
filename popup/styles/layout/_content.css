@@ -26,20 +26,29 @@
 /* 输入框样式 */
 .input-section__input {
   flex: 1;
-  height: 36px; /* 明确设置高度 */
-  padding: 0 var(--spacing-md); /* 调整内边距 */
+  height: 36px;
+  padding: 0 var(--spacing-md);
   border: none;
   background: var(--bg-primary);
   font-size: 1rem;
   color: var(--text-primary);
   border-radius: var(--radius-md);
   outline: none;
-  line-height: 36px; /* 与高度保持一致 */
+  line-height: 36px;
 }
 
+/* 优化 placeholder 样式 */
 .input-section__input::placeholder {
   color: var(--text-secondary);
-  opacity: 0.6;
+  opacity: 0.7;
+  font-size: 0.95rem;
+  font-style: italic;
+  transition: opacity 0.2s ease;
+}
+
+/* 输入框获得焦点时淡出 placeholder */
+.input-section__input:focus::placeholder {
+  opacity: 0.4;
 }
 
 /* 生成按钮 */
