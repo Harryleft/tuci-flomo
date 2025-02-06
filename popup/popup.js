@@ -286,23 +286,25 @@ class PopupManager {
       // 创建结果容器
       const formattedContent = `
         <div class="result-card__content">
-          <div class="word-section">
-            <div class="word-section__header">
-              <h3>${result.英语}</h3>
+          <!-- 助记拆解部分 -->
+          <div class="result-card__part memory-section">
+            <div class="result-card__part-title">
+              <span class="result-card__part-icon">💡</span>
+              <span>助记拆解</span>
+            </div>
+            <div class="result-card__part-content">
+              ${formatParagraphs(result.关键词)}
             </div>
           </div>
           
-          <div class="memory-section">
-            <div class="section-content">
-              <div class="section-label">助记拆解</div>
-              <p class="typewriter-content">${result.关键词}</p>
+          <!-- 场景描述部分 -->
+          <div class="result-card__part scene-section">
+            <div class="result-card__part-title">
+              <span class="result-card__part-icon">🎬</span>
+              <span>场景描述</span>
             </div>
-          </div>
-          
-          <div class="scene-section">
-            <div class="section-content">
-              <div class="section-label">场景描述</div>
-              <p class="typewriter-content">${result.图像描述}</p>
+            <div class="result-card__part-content">
+              ${formatParagraphs(result.图像描述)}
             </div>
           </div>
         </div>
@@ -361,11 +363,9 @@ class PopupManager {
       setTimeout(() => {
         this.elements.wordInput.value = '';
         this.elements.descriptionContent.innerHTML = `
-          <div class="result-section__placeholder text-secondary">
-            <div>
-              输入单词并点击生成按钮,<br>
-              AI将为你创建生动的场景描述...
-            </div>
+          <div class="result-section__placeholder">
+            <div>输入单词并点击生成按钮</div>
+            <div>AI 将为你创建生动的场景描述...</div>
           </div>
         `
         this.currentDescription = null;
@@ -524,3 +524,42 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 export default popupManager; 
+
+function updateResultCard(result) {
+  const sceneDescription = document.getElementById('sceneDescription');
+  sceneDescription.innerHTML = `
+    <div class="result-card__content">
+      <!-- 助记拆解部分 -->
+      <div class="result-card__part memory-section">
+        <div class="result-card__part-title">
+          <span class="result-card__part-icon">💡</span>
+          <span>助记拆解</span>
+        </div>
+        <div class="result-card__part-content">
+          ${formatParagraphs(result.关键词)}
+        </div>
+      </div>
+      
+      <!-- 场景描述部分 -->
+      <div class="result-card__part scene-section">
+        <div class="result-card__part-title">
+          <span class="result-card__part-icon">🎬</span>
+          <span>场景描述</span>
+        </div>
+        <div class="result-card__part-content">
+          ${formatParagraphs(result.图像描述)}
+        </div>
+      </div>
+    </div>
+  `;
+  
+  sceneDescription.classList.add('generated');
+}
+
+// 格式化段落
+function formatParagraphs(text) {
+  return text.split('\n')
+    .filter(line => line.trim())
+    .map(line => `<p>${line}</p>`)
+    .join('');
+} 
