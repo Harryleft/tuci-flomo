@@ -1,6 +1,5 @@
 /* 头部区域 */
 .side-panel__header {
-  height: var(--header-height);
   padding: 20px var(--spacing-lg);
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
