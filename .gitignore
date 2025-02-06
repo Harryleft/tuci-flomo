@@ -34,3 +34,6 @@ yarn-error.log*
 
 # 其他文件
 *.cursorrules
+.idea/
+.vscode/
+.cursor/*
