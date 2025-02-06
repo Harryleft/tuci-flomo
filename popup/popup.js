@@ -175,30 +175,57 @@ class PopupManager {
     }
   }
 
+  async typewriterEffect(element, text, speed = 50) {
+    let index = 0;
+    element.textContent = '';
+    element.classList.add('typing');
+    
+    // 添加光标
+    const cursor = document.createElement('span');
+    cursor.className = 'typewriter-cursor';
+    element.parentNode.appendChild(cursor);
+
+    return new Promise((resolve) => {
+      const type = () => {
+        if (index < text.length) {
+          element.textContent += text.charAt(index);
+          index++;
+          setTimeout(type, speed);
+        } else {
+          // 动画完成后移除光标
+          cursor.remove();
+          resolve();
+        }
+      };
+      type();
+    });
+  }
+
   async handleGenerate() {
     const word = this.elements.wordInput.value.trim();
     
     if (!word) {
-      // 添加输入框抖动效果
-      this.elements.wordInput.classList.add('shake');
-      setTimeout(() => this.elements.wordInput.classList.remove('shake'), 500);
       this.showError('请输入要记忆的单词');
       return;
     }
 
     try {
-      this.setGenerating(true);
-      
+      // 设置按钮加载状态
+      const generateBtn = this.elements.generateBtn;
+      generateBtn.classList.add('loading');
+      generateBtn.disabled = true;
+
       // 显示加载动画
       this.elements.descriptionContent.innerHTML = `
-        <div class="loading">
-          <span>正在生成内容...</span>
+        <div class="loading-container">
+          <div class="loading-container__icon">✨</div>
+          <div class="loading-container__text">AI 正在为您生成场景描述...</div>
         </div>
       `;
 
       const result = await APIClient.generateDescription(word, this.currentScene);
 
-      // 使用动画展示结果
+      // 创建结果容器
       const formattedContent = `
         <div class="result-card__content">
           <div class="word-section">
@@ -210,32 +237,41 @@ class PopupManager {
           <div class="memory-section">
             <div class="section-content">
               <div class="section-label">助记拆解</div>
-              <p>${result.关键词}</p>
+              <p class="typewriter-content">${result.关键词}</p>
             </div>
           </div>
           
           <div class="scene-section">
             <div class="section-content">
               <div class="section-label">场景描述</div>
-              <p>${result.图像描述}</p>
+              <p class="typewriter-content">${result.图像描述}</p>
             </div>
           </div>
         </div>
       `;
 
-      // 平滑过渡到结果
-      this.elements.descriptionContent.style.opacity = '0';
-      setTimeout(() => {
-        this.elements.descriptionContent.innerHTML = formattedContent;
-        this.elements.descriptionContent.style.opacity = '1';
-      }, 300);
+      this.elements.descriptionContent.innerHTML = formattedContent;
 
-      this.elements.submitBtn.disabled = false;
+      // 依次执行打字机效果
+      const elements = this.elements.descriptionContent.querySelectorAll('.typewriter-content');
+      for (const element of elements) {
+        const text = element.textContent;
+        element.textContent = '';
+        await this.typewriterEffect(element, text);
+      }
+
     } catch (error) {
       console.error('生成失败:', error);
       this.showError(error.message || '生成失败，请重试');
     } finally {
-      this.setGenerating(false);
+      // 恢复按钮状态
+      const generateBtn = this.elements.generateBtn;
+      generateBtn.classList.remove('loading');
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = `
+        <span class="generate-btn__text">生成</span>
+        <span class="generate-btn__icon">✨</span>
+      `;
     }
   }
 

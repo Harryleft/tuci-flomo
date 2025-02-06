@@ -362,4 +362,33 @@
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
+}
+
+/* 打字机效果容器 */
+.typewriter-content {
+  display: inline-block;
+  white-space: pre-wrap;
+  word-break: break-word;
+  opacity: 0;
+}
+
+/* 打字机动画 */
+.typewriter-content.typing {
+  opacity: 1;
+}
+
+/* 光标效果 */
+.typewriter-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--accent-color);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blink 0.7s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 } 
