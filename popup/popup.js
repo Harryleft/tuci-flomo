@@ -214,12 +214,16 @@ class PopupManager {
       const generateBtn = this.elements.generateBtn;
       generateBtn.classList.add('loading');
       generateBtn.disabled = true;
+      // generateBtn.textContent = '生成中...';
 
-      // 显示加载动画
+      // 显示加载动画和进度指示器
       this.elements.descriptionContent.innerHTML = `
         <div class="loading-container">
           <div class="loading-container__icon">✨</div>
-          <div class="loading-container__text">AI 正在为您生成场景描述...</div>
+          <div class="loading-container__text">
+            <div>AI 正在为您生成场景描述...</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 4px;">这可能需要几秒钟时间</div>
+          </div>
         </div>
       `;
 
@@ -270,14 +274,20 @@ class PopupManager {
       console.error('生成失败:', error);
       this.showError(error.message || '生成失败，请重试');
     } finally {
-      // 恢复按钮状态
+      // 恢复按钮状态，添加过渡动画
       const generateBtn = this.elements.generateBtn;
+      generateBtn.style.transition = 'all 0.3s ease';
       generateBtn.classList.remove('loading');
       generateBtn.disabled = false;
       generateBtn.innerHTML = `
         <span class="generate-btn__text">生成</span>
         <span class="generate-btn__icon">✨</span>
       `;
+      
+      // 移除过渡动画
+      setTimeout(() => {
+        generateBtn.style.transition = '';
+      }, 300);
     }
   }
 
