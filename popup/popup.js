@@ -152,6 +152,29 @@ class PopupManager {
       submitBtn.disabled = true;
     }
 
+    // 添加输入框事件监听
+    const { wordInput } = this.elements;
+    if (wordInput) {
+      // 失去焦点时，如果输入框为空，恢复示例文本
+      wordInput.addEventListener('blur', () => {
+        if (!wordInput.value.trim()) {
+          wordInput.placeholder = '示例：sunshine';
+        }
+      });
+
+      // 获得焦点时，暂时隐藏示例文本
+      wordInput.addEventListener('focus', () => {
+        wordInput.placeholder = '';
+      });
+
+      // 输入内容变化时，根据是否为空决定是否显示示例文本
+      wordInput.addEventListener('input', () => {
+        if (!wordInput.value.trim()) {
+          wordInput.placeholder = '示例：sunshine';
+        }
+      });
+    }
+
     console.log('事件监听器绑定完成');
   }
 
