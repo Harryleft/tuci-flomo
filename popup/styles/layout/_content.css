@@ -118,17 +118,48 @@
   padding: var(--spacing-xl);
   background: var(--bg-secondary);
   border-radius: var(--radius-lg);
-  animation: pulse 2s ease-in-out infinite;
+  position: relative; /* 确保相对定位 */
+  overflow: hidden; /* 隐藏溢出的进度条 */
 }
 
+/* 进度指示器 */
+.loading-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30%; /* 设置进度条宽度 */
+  height: 2px;
+  background: var(--accent-color);
+  animation: progress-bar 2s ease-in-out infinite;
+}
+
+/* 进度条动画 */
+@keyframes progress-bar {
+  0% {
+    left: -30%;
+    width: 30%;
+  }
+  50% {
+    left: 100%;
+    width: 30%;
+  }
+  100% {
+    left: 100%;
+    width: 0;
+  }
+}
+
+/* 加载图标和文本样式 */
 .loading-container__icon {
   font-size: 24px;
   animation: bounce 1s ease infinite;
+  margin-bottom: var(--spacing-sm);
 }
 
 .loading-container__text {
   color: var(--text-secondary);
   font-size: 14px;
+  text-align: center;
 }
 
 /* 结果展示区域 */

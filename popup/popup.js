@@ -219,6 +219,7 @@ class PopupManager {
       // 显示加载动画和进度指示器
       this.elements.descriptionContent.innerHTML = `
         <div class="loading-container">
+          <div class="loading-progress"></div>
           <div class="loading-container__icon">✨</div>
           <div class="loading-container__text">
             <div>AI 正在为您生成场景描述...</div>
