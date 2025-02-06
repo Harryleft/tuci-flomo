@@ -4,6 +4,9 @@ import ConfigManager from '../services/ConfigManager.js';
 class PopupManager {
   constructor() {
     console.log('PopupManager 构造函数被调用');
+    // 初始化 elements 为空对象
+    this.elements = {};
+    
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.initialize());
     } else {
@@ -15,11 +18,13 @@ class PopupManager {
     try {
       console.log('开始初始化 PopupManager');
       
-      // 先检查 API Key
+      // 先初始化元素，确保后续操作有效
+      await this.initElements();
+      
+      // 检查 API Key
       const hasAPIKey = await ConfigManager.hasValidAPIKey();
       console.log('API Key 状态:', hasAPIKey);
       
-      await this.initElements();
       await this.loadSettings();
       this.bindEventListeners();
       
@@ -31,8 +36,8 @@ class PopupManager {
         this.elements.generateBtn.disabled = false;
       }
       
-      // 初始化提交按钮状态
-      this.updateSubmitButtonState(false);
+      // 初始化提交按钮状态为 default
+      this.updateSubmitButtonState('default');
       
       this.preventAutoClose();
       console.log('初始化完成');
@@ -56,7 +61,6 @@ class PopupManager {
       };
 
       // 查找所有元素
-      this.elements = {};
       for (const [key, selector] of Object.entries(selectors)) {
         const element = document.querySelector(selector);
         if (!element) {
@@ -325,17 +329,24 @@ class PopupManager {
     }
 
     try {
+      // 设置提交中状态
       this.updateSubmitButtonState('submitting');
       await APIClient.submitToFlomo(this.currentDescription);
       
-      // 提交成功
+      // 设置成功状态
       this.updateSubmitButtonState('success');
-      this.showSuccessStatus();
-
-      // 延迟重置状态
+      
+      // 1.5秒后重置状态和界面
       setTimeout(() => {
         this.elements.wordInput.value = '';
-        this.elements.descriptionContent.innerHTML = '<div class="placeholder">输入单词并点击生成按钮，AI将为你创建生动的场景描述...</div>';
+        this.elements.descriptionContent.innerHTML = `
+          <div class="result-section__placeholder text-secondary">
+            <div>
+              输入单词并点击生成按钮,<br>
+              AI将为你创建生动的场景描述...
+            </div>
+          </div>
+        `
         this.currentDescription = null;
         this.updateSubmitButtonState('default');
       }, 1500);
@@ -370,44 +381,6 @@ class PopupManager {
         </div>
       `;
     }
-  }
-
-  showSuccess(message) {
-    this.elements.descriptionContent.innerHTML = `
-      <div class="success-message">
-        <span class="success-icon">✅</span>
-        <span>${message}</span>
-      </div>
-    `;
-  }
-
-  showSuccessStatus() {
-    const existingStatus = document.getElementById('submitStatus');
-    if (existingStatus) {
-      existingStatus.remove();
-    }
-    
-    const statusEl = document.createElement('div');
-    statusEl.id = 'submitStatus';
-    statusEl.className = 'submit-status';
-    statusEl.innerHTML = `
-      <span class="submit-status__icon">✓</span>
-      <span class="submit-status__text">已保存</span>
-    `;
-    
-    document.body.appendChild(statusEl);
-    
-    void statusEl.offsetWidth;
-    
-    statusEl.classList.add('submit-status--success');
-    
-    setTimeout(() => {
-      statusEl.classList.add('submit-status--hide');
-      
-      statusEl.addEventListener('animationend', () => {
-        statusEl.remove();
-      }, { once: true });
-    }, 1000);
   }
 
   preventAutoClose() {
@@ -465,49 +438,42 @@ class PopupManager {
 
   // 更新提交按钮状态的方法
   updateSubmitButtonState(state = 'default') {
-    if (!this.elements.submitBtn) return;
+    const submitBtn = this.elements.submitBtn;
+    if (!submitBtn) {
+      console.warn('提交按钮未找到，跳过状态更新');
+      return;
+    }
 
     const states = {
       default: {
         disabled: true,
-        icon: '📝',
         text: '提交到 Flomo',
-        hint: '生成内容后即可提交',
         class: 'btn--submit-default'
       },
       ready: {
         disabled: false,
-        icon: '📝',
         text: '提交到 Flomo',
-        hint: '点击提交到 Flomo',
         class: 'btn--submit-ready'
       },
       submitting: {
         disabled: true,
-        icon: '⏳',
-        text: '正在提交...',
-        hint: '正在保存到 Flomo',
+        text: '提交中...',
         class: 'btn--submit-submitting'
       },
       success: {
         disabled: true,
-        icon: '✅',
-        text: '提交成功',
-        hint: '已保存到 Flomo',
+        text: '✅ 已提交',
         class: 'btn--submit-success'
       }
     };
 
-    const config = states[state];
-    const btn = this.elements.submitBtn;
-
-    btn.disabled = config.disabled;
-    btn.className = `btn btn--submit ${config.class}`;
-    btn.title = config.hint;
-    btn.innerHTML = `
-      <span class="btn__icon">${config.icon}</span>
-      <span class="btn__text">${config.text}</span>
-    `;
+    const config = states[state] || states.default;
+    
+    // 重置按钮状态
+    submitBtn.disabled = config.disabled;
+    submitBtn.className = `btn btn--submit ${config.class}`;
+    submitBtn.textContent = config.text;
+    submitBtn.removeAttribute('title');  // 确保移除 title 属性
   }
 }
 
