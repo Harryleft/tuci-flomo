@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "图词 Flomo",
   "version": "1.0.0",
-  "description": "通过 AI 生成的场景描述和图像来辅助单词记忆",
+  "description": "通过 AI 生成的场景描述来辅助单词记忆",
   "permissions": [
     "storage",
     "contextMenus",
