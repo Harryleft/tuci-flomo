@@ -7,7 +7,6 @@
     "storage"
   ],
   "host_permissions": [
-    "*://*/*",
     "https://api.deepseek.com/*",
     "https://api.siliconflow.cn/*"
   ],
