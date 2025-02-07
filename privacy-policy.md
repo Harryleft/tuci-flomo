@@ -47,7 +47,7 @@
 
 如有任何隐私相关问题，请通过以下方式联系：
 
-- GitHub Issues: [项目地址](https://github.com/xiejiahe/flomo-word-generator/issues)
+- GitHub Issues: [项目地址](https://github.com/Harryleft/tuci-flomo/issues)
 
 ## 政策更新
 
