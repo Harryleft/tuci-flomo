@@ -4,11 +4,7 @@
   "version": "1.0.0",
   "description": "通过 AI 生成的场景描述来辅助单词记忆",
   "permissions": [
-    "storage",
-    "contextMenus",
-    "activeTab",
-    "scripting",
-    "tabs"
+    "storage"
   ],
   "host_permissions": [
     "*://*/*",
