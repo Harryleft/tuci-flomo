@@ -31,9 +31,9 @@
     padding: var(--spacing-xs);
   }
   
-  .result-section {
+  /* .result-section {
     padding: var(--spacing-sm);
-  }
+  } */
   
   .result-card {
     padding: var(--spacing-sm);

@@ -554,6 +554,15 @@ function updateResultCard(result) {
   `;
   
   sceneDescription.classList.add('generated');
+
+  // 检查内容是否需要滚动
+  const contentElements = sceneDescription.querySelectorAll('.result-card__part-content');
+  contentElements.forEach(element => {
+    if (element.scrollHeight > element.clientHeight) {
+      element.classList.add('scrollable');
+      console.log('Content is scrollable:', element.scrollHeight, element.clientHeight);
+    }
+  });
 }
 
 // 格式化段落
