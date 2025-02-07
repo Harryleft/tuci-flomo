@@ -47,7 +47,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: #2E7D32;  /* 深绿色文字 */
+  /* color: #2E7D32;  深绿色文字 */
   background: #A5D6A7;  /* 柔和的淡绿色背景 */
   border: none;
   border-radius: var(--radius-md);
