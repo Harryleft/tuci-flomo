@@ -29,10 +29,6 @@
 
 扩展仅请求必要的权限：
 - `storage`: 存储本地配置
-- `contextMenus`: 提供右键菜单
-- `activeTab`: 获取当前标签信息
-- `scripting`: 执行内容脚本
-- `tabs`: 管理标签页
 
 ## 用户权利
 
@@ -51,7 +47,7 @@
 
 如有任何隐私相关问题，请通过以下方式联系：
 
-- GitHub Issues: [项目地址]
+- GitHub Issues: [项目地址](https://github.com/xiejiahe/flomo-word-generator/issues)
 
 ## 政策更新
 
