@@ -39,30 +39,59 @@
   transform: translateY(-1px);
 }
 
+/* 提交按钮基础样式 */
 .btn--submit {
   width: 100%;
   height: 40px;
-  color: #ffffff;
-  background: var(--primary-green);
-  box-shadow: 0 2px 4px var(--button-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #2E7D32;  /* 深绿色文字 */
+  background: #A5D6A7;  /* 柔和的淡绿色背景 */
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+/* 悬停状态 */
 .btn--submit:hover:not(:disabled) {
-  background: var(--primary-green-hover);
+  background: #81C784;  /* 稍深的绿色 */
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px var(--button-shadow);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
+/* 点击状态 */
 .btn--submit:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 1px 2px var(--button-shadow);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* 禁用状态 */
 .btn--submit:disabled {
-  background: var(--primary-green);
-  opacity: 0.5;
+  background: #E8F5E9;  /* 更浅的绿色 */
+  color: #81C784;
   cursor: not-allowed;
   box-shadow: none;
+  opacity: 0.8;
+}
+
+/* 成功状态 */
+.btn--submit.success {
+  background: #81C784;
+  color: white;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* 图标样式 */
+.btn--submit .btn__icon {
+  font-size: 16px;
+  opacity: 0.9;
 }
 
 .btn__icon {
