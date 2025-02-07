@@ -166,4 +166,95 @@
     height: 36px;
     font-size: var(--font-size-sm);
   }
+}
+
+/* API测试按钮 */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #E0E0E0;
+  border-radius: var(--radius-md);
+  background: white;
+  color: #424242;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #F5F5F5;
+  border-color: #D4D4D4;
+}
+
+.btn-secondary:active {
+  background: #EEEEEE;
+}
+
+/* API测试结果容器 */
+.api-test {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* API测试结果文本 */
+.api-test-result {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* 成功状态 */
+.api-test-result.success {
+  opacity: 1;
+  color: #2E7D32;
+}
+
+.api-test-result.success::before {
+  content: '✓';
+  font-weight: bold;
+}
+
+/* 错误状态 */
+.api-test-result.error {
+  opacity: 1;
+  color: #D32F2F;
+}
+
+.api-test-result.error::before {
+  content: '✕';
+  font-weight: bold;
+}
+
+/* 错误提示框 */
+.api-error-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  padding: 8px 12px;
+  margin-top: 4px;
+  background: #FFEBEE;
+  border: 1px solid #FFCDD2;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: #C62828;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* 显示错误提示 */
+.api-test-result.error:hover + .api-error-tooltip {
+  opacity: 1;
+  transform: translateY(0);
 } 

@@ -256,6 +256,44 @@ class UIManager {
   }
 }
 
+function showTestResult(success, message) {
+  const resultEl = document.getElementById('apiTestResult');
+  const tooltipEl = document.querySelector('.api-error-tooltip');
+  
+  resultEl.className = 'api-test-result ' + (success ? 'success' : 'error');
+  resultEl.textContent = success ? '连接成功' : '连接失败';
+  
+  if (!success && tooltipEl) {
+    tooltipEl.textContent = message || '请检查 API Key 是否正确';
+  }
+}
+
+// 测试连接
+async function testApiConnection(apiKey) {
+  try {
+    // ... API 测试逻辑 ...
+    showTestResult(true);
+  } catch (error) {
+    let errorMessage = '连接失败';
+    if (error.status === 401) {
+      errorMessage = 'API Key 无效或已过期';
+    } else if (error.status === 429) {
+      errorMessage = 'API 调用次数已达上限';
+    } else if (error.status === 500) {
+      errorMessage = '服务器内部错误，请稍后再试';
+    } else if (error.status === 502) {
+      errorMessage = '网关错误，请稍后再试';
+    } else if (error.status === 503) {
+      errorMessage = '服务暂时不可用，请稍后再试';      
+    } else if (error.status === 504) {
+      errorMessage = '网关超时，请稍后再试';
+    } else if (!navigator.onLine) {
+      errorMessage = '请检查网络连接';
+    }
+    showTestResult(false, errorMessage);
+  }
+}
+
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
   try {
