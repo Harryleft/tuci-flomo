@@ -3,77 +3,85 @@ import ConfigManager from './ConfigManager.js';
 class APIClient {
   static BASE_URL = 'https://api.siliconflow.cn/v1/chat/completions';
 
-  static async generateDescription(word, scene = 'default') {
-    try {
-      console.log('开始生成描述:', { word, scene });
-      
-      // 获取 API Key
-      const apiKey = await ConfigManager.getAPIKey();
-      if (!apiKey) {
-        console.warn('未配置 API Key');
-        throw new Error('请先设置 API Key');
-      }
-      console.log('API Key 验证通过');
+  static async generateDescription(word, scene = 'default', maxRetries = 3) {
+    let retryCount = 0;
+    let lastError = null;
 
-      // 构建提示词
-      const prompt = this._buildPrompt(word, scene);
-      console.log('生成提示词:', prompt);
-      
-      // 构建请求选项
-      const options = {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'deepseek-ai/DeepSeek-V3',
-          messages: [{
-            role: 'user',
-            content: prompt
-          }],
-          stream: false,
-          max_tokens: 512,
-          temperature: 0.7,
-          top_p: 0.7,
-          top_k: 50,
-          frequency_penalty: 0.5,
-          n: 1
-        })
-      };
-      console.log('API 请求配置:', {
-        url: this.BASE_URL,
-        method: options.method,
-        headers: { ...options.headers, Authorization: '(hidden)' },
-        body: JSON.parse(options.body)
-      });
+    while (retryCount < maxRetries) {
+      try {
+        console.log('开始生成描述:', { word, scene });
+        
+        // 获取 API Key
+        const apiKey = await ConfigManager.getAPIKey();
+        if (!apiKey) {
+          console.warn('未配置 API Key');
+          throw new Error('请先设置 API Key');
+        }
+        console.log('API Key 验证通过');
 
-      // 发送请求
-      const response = await fetch(this.BASE_URL, options);
-      console.log('API 响应状态:', response.status);
-      const data = await response.json();
-      console.log('API 响应数据:', data);
-
-      if (!response.ok) {
-        console.error('API 请求失败:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: data.error
+        // 构建提示词
+        const prompt = this._buildPrompt(word, scene);
+        console.log('生成提示词:', prompt);
+        
+        // 构建请求选项
+        const options = {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'deepseek-ai/DeepSeek-V3',
+            messages: [{
+              role: 'user',
+              content: prompt
+            }],
+            stream: false,
+            max_tokens: 512,
+            temperature: 0.7,
+            top_p: 0.7,
+            top_k: 50,
+            frequency_penalty: 0.5,
+            n: 1
+          })
+        };
+        console.log('API 请求配置:', {
+          url: this.BASE_URL,
+          method: options.method,
+          headers: { ...options.headers, Authorization: '(hidden)' },
+          body: JSON.parse(options.body)
         });
-        throw new Error(data.error?.message || '生成描述失败');
-      }
 
-      console.log('生成描述成功:', data.choices[0].message.content);
-      // 处理并返回格式化的响应
-      return this._processResponse(data.choices[0].message.content);
-    } catch (error) {
-      console.error('生成描述时出错:', {
-        error: error.message,
-        stack: error.stack,
-        word,
-        scene
-      });
-      throw error;
+        // 发送请求
+        const response = await fetch(this.BASE_URL, options);
+        console.log('API 响应状态:', response.status);
+        const data = await response.json();
+        console.log('API 响应数据:', data);
+
+        if (!response.ok) {
+          console.error('API 请求失败:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: data.error
+          });
+          throw new Error(data.error?.message || '生成描述失败');
+        }
+
+        console.log('生成描述成功:', data.choices[0].message.content);
+        // 处理并返回格式化的响应
+        return this._processResponse(data.choices[0].message.content);
+      } catch (error) {
+        lastError = error;
+        retryCount++;
+        
+        // 如果不是最后一次重试，等待一段时间后重试
+        if (retryCount < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // 递增等待时间
+          continue;
+        }
+        
+        throw new Error('生成描述失败，请稍后重试');
+      }
     }
   }
 

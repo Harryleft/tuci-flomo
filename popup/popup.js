@@ -204,77 +204,27 @@ class PopupManager {
       return;
     }
 
-    try {
-      const generateBtn = this.elements.generateBtn;
-      generateBtn.classList.add('loading');
-      generateBtn.disabled = true;
+    const generateBtn = this.elements.generateBtn;
+    generateBtn.classList.add('loading');
+    generateBtn.disabled = true;
 
-      this.elements.descriptionContent.innerHTML = `
-        <div class="loading-container">
-          <div class="loading-progress"></div>
-          <div class="loading-container__icon">✨</div>
-          <div class="loading-container__text">
-            <div>AI 正在为您生成场景描述...</div>
-            <div style="font-size: 12px; opacity: 0.8; margin-top: 4px;">这可能需要几秒钟时间</div>
-          </div>
-        </div>
-      `;
+    try {
+      // 显示加载状态
+      this.showLoading('AI 正在为您生成场景描述...');
 
       const result = await APIClient.generateDescription(word, this.currentScene);
-
       this.currentDescription = result;
 
-      const formattedContent = `
-        <div class="result-card__content">
-          <div class="result-card__part memory-section">
-            <div class="result-card__part-title">
-              <span class="result-card__part-icon">💡</span>
-              <span>助记拆解</span>
-            </div>
-            <div class="result-card__part-content">
-              ${formatParagraphs(result.关键词)}
-            </div>
-          </div>
-          
-          <div class="result-card__part scene-section">
-            <div class="result-card__part-title">
-              <span class="result-card__part-icon">🎬</span>
-              <span>场景描述</span>
-            </div>
-            <div class="result-card__part-content">
-              ${formatParagraphs(result.图像描述)}
-            </div>
-          </div>
-        </div>
-      `;
-
-      this.elements.descriptionContent.innerHTML = formattedContent;
-
-      const elements = this.elements.descriptionContent.querySelectorAll('.typewriter-content');
-      for (const element of elements) {
-        const text = element.textContent;
-        element.textContent = '';
-        await this.typewriterEffect(element, text);
-      }
-
+      // 更新界面显示结果
+      this.showResult(result);
       this.updateSubmitButtonState('ready');
 
     } catch (error) {
       console.error('生成失败:', error);
-      this.showError(error.message || '生成失败，请重试');
+      this.showRetryableError(error.message || '生成失败，正在重试...');
       this.updateSubmitButtonState('default');
     } finally {
-      generateBtn.style.transition = 'all 0.3s ease';
-      generateBtn.classList.remove('loading');
-      generateBtn.disabled = false;
-      generateBtn.innerHTML = `
-        <span class="generate-btn__text">生成</span>
-        <span class="generate-btn__icon">✨</span>
-      `;
-      
-      setTimeout(() => {
-        generateBtn.style.transition = '';
-      }, 300);
+      this.updateGenerateButton(false);
     }
   }
 
@@ -418,6 +368,78 @@ class PopupManager {
       <span class="btn__icon">${config.icon}</span>
       <span class="btn__text">${config.text}</span>
     `;
+  }
+
+  // 添加新的错误显示方法
+  showRetryableError(message) {
+    if (this.elements.descriptionContent) {
+      this.elements.descriptionContent.innerHTML = `
+        <div class="error-message retryable">
+          <div class="error-icon-container">
+            <span class="error-icon">⚠️</span>
+            <div class="retry-spinner"></div>
+          </div>
+          <div class="error-content">
+            <div class="error-text">${message}</div>
+            <div class="retry-text">自动重试中...</div>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // 添加加载状态显示方法
+  showLoading(message) {
+    this.elements.descriptionContent.innerHTML = `
+      <div class="loading-container">
+        <div class="loading-progress"></div>
+        <div class="loading-container__icon">✨</div>
+        <div class="loading-container__text">
+          <div>${message}</div>
+          <div class="loading-container__subtext">这可能需要几秒钟时间</div>
+        </div>
+      </div>
+    `;
+  }
+
+  updateGenerateButton(isGenerating) {
+    this.setGenerating(isGenerating);
+    this.elements.generateBtn.disabled = isGenerating;
+  }
+
+  showResult(result) {
+    const formattedContent = `
+      <div class="result-card__content">
+        <div class="result-card__part memory-section">
+          <div class="result-card__part-title">
+            <span class="result-card__part-icon">��</span>
+            <span>助记拆解</span>
+          </div>
+          <div class="result-card__part-content">
+            ${formatParagraphs(result.关键词)}
+          </div>
+        </div>
+        
+        <div class="result-card__part scene-section">
+          <div class="result-card__part-title">
+            <span class="result-card__part-icon">🎬</span>
+            <span>场景描述</span>
+          </div>
+          <div class="result-card__part-content">
+            ${formatParagraphs(result.图像描述)}
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.elements.descriptionContent.innerHTML = formattedContent;
+
+    const elements = this.elements.descriptionContent.querySelectorAll('.typewriter-content');
+    for (const element of elements) {
+      const text = element.textContent;
+      element.textContent = '';
+      this.typewriterEffect(element, text);
+    }
   }
 }
 
