@@ -367,7 +367,7 @@ class PopupManager {
             <div>输入单词并点击生成按钮</div>
             <div>AI 将为你创建生动的场景描述...</div>
           </div>
-        `
+        `;
         this.currentDescription = null;
         this.updateSubmitButtonState('default');
       }, 1500);
