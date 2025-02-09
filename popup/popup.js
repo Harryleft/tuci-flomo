@@ -412,7 +412,7 @@ class PopupManager {
       <div class="result-card__content">
         <div class="result-card__part memory-section">
           <div class="result-card__part-title">
-            <span class="result-card__part-icon">��</span>
+            <span class="result-card__part-icon">💡</span>
             <span>助记拆解</span>
           </div>
           <div class="result-card__part-content">
