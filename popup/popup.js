@@ -132,6 +132,17 @@ class PopupManager {
       console.error('生成按钮未找到');
     }
 
+    if (submitBtn) {
+      submitBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (!submitBtn.disabled) {
+          await this.handleSubmit();
+        }
+      });
+    } else {
+      console.error('提交按钮未找到');
+    }
+
     const { wordInput } = this.elements;
     if (wordInput) {
       wordInput.addEventListener('blur', () => {
