@@ -1,10 +1,25 @@
 :root {
+  /* 主题颜色 - 统一管理所有颜色变量 */
+  --primary-green: #00B167;      /* 主要绿色 */
+  --primary-green-hover: #009d5c;/* 主要绿色悬停 */
+  --secondary-green: #7ED957;    /* 次要绿色 */
+  --secondary-green-hover: #72c74e; /* 次要绿色悬停 */
+  --disabled-green: #B7E4B7;     /* 禁用状态绿色 */
+  --button-shadow: rgba(0, 177, 103, 0.2); /* 按钮阴影 */
+
+  /* 基础颜色 */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --border-color: #dee2e6;
+  --accent-color: var(--primary-green);  /* 使用主题绿色作为强调色 */
+  
   /* Colors - 清新学习风格 */
   --bg-primary: #ffffff;
   --bg-secondary: #f8f9fa;
   --text-primary: #2d3436;
   --text-secondary: #636e72;
-  --accent-color: #00b894;    /* 主题色：清新绿 */
   --accent-hover: #00a187;
   --border-color: #dfe6e9;
   
@@ -50,14 +65,6 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-  
-  /* 颜色 */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --text-primary: #212529;
-  --text-secondary: #6c757d;
-  --border-color: #dee2e6;
-  --accent-color: #3498db;
   
   /* 动画过渡 */
   --transition-fast: 0.2s ease;

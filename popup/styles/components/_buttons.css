@@ -1,11 +1,4 @@
-/* 定义颜色变量 */
-:root {
-  --primary-green: #00B167;
-  --primary-green-hover: #009d5c;
-  --secondary-green: #7ED957;
-  --secondary-green-hover: #72c74e;
-  --button-shadow: rgba(0, 177, 103, 0.2);
-}
+
 
 .btn {
   display: inline-flex;
@@ -47,14 +40,14 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  /* color: #2E7D32;  深绿色文字 */
-  background: #A5D6A7;  /* 柔和的淡绿色背景 */
+  background: var(--primary-green); 
   border: none;
   border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -73,11 +66,11 @@
 
 /* 禁用状态 */
 .btn--submit:disabled {
-  background: #E8F5E9;  /* 更浅的绿色 */
-  color: #81C784;
+  background: var(--disabled-green);  
+  /* color: #81C784; */
   cursor: not-allowed;
   box-shadow: none;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 /* 成功状态 */
@@ -170,13 +163,12 @@
   to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-/* ... 其他按钮样式 ... */
 
 /* 暗色模式适配 */
 @media (prefers-color-scheme: dark) {
-  :root {
+  /* :root {
     --button-shadow: rgba(0, 177, 103, 0.15);
-  }
+  } */
   
   .btn--submit:disabled {
     background: var(--primary-green);
