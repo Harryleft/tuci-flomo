@@ -110,40 +110,64 @@
   padding: 8px var(--spacing-md);
   border: none;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--secondary-green) 0%, var(--primary-green) 100%);
+  background: var(--primary-green);
   color: #fff;
-  font-size: 0.9rem;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-fast);
-  box-shadow: 0 2px 4px var(--button-shadow);
+  transition: all 0.2s ease;
 }
 
-.generate-btn:hover {
-  background: linear-gradient(135deg, var(--secondary-green-hover) 0%, var(--primary-green-hover) 100%);
+/* 悬停状态 */
+.generate-btn:hover:not(:disabled) {
+  background: var(--primary-green-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px var(--button-shadow);
 }
 
-.generate-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 2px var(--button-shadow);
-}
-
-.generate-btn__text {
-  order: 1;
-}
-
-.generate-btn__icon {
-  order: 2;
-  font-size: 1rem;
-}
-
+/* 禁用状态 */
 .generate-btn:disabled {
-  background: var(--text-secondary);
-  opacity: 0.6;
+  background: #e0e0e0;
+  color: #999;
   cursor: not-allowed;
   transform: none;
+}
+
+/* 加载状态 */
+.generate-btn.loading {
+  background: var(--primary-green);
+  color: transparent;
+  position: relative;
+  pointer-events: none;
+}
+
+.generate-btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  border-right-color: transparent;
+  animation: spin 0.8s linear infinite;
+}
+
+/* 按钮图标 */
+.generate-btn__icon {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+/* 按钮文字 */
+.generate-btn__text {
+  font-weight: 500;
+}
+
+@keyframes spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 /* ... 其他按钮样式 ... */

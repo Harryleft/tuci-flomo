@@ -215,9 +215,8 @@ class PopupManager {
       return;
     }
 
-    const generateBtn = this.elements.generateBtn;
-    generateBtn.classList.add('loading');
-    generateBtn.disabled = true;
+    // 更新生成按钮状态
+    this.updateGenerateButton(true);
 
     try {
       // 显示加载状态
@@ -235,6 +234,7 @@ class PopupManager {
       this.showRetryableError(error.message || '生成失败，正在重试...');
       this.updateSubmitButtonState('default');
     } finally {
+      // 恢复生成按钮状态
       this.updateGenerateButton(false);
     }
   }
@@ -276,11 +276,20 @@ class PopupManager {
       .join('');
   }
 
-  setGenerating(isGenerating) {
-    this.elements.generateBtn.disabled = isGenerating;
-    this.elements.generateBtn.innerHTML = isGenerating ? 
-      '<span>生成中...</span>' : 
-      '<span class="generate-btn__text">生成</span><span class="generate-btn__icon">✨</span>';
+  updateGenerateButton(isGenerating) {
+    const generateBtn = this.elements.generateBtn;
+    generateBtn.disabled = isGenerating;
+    
+    if (isGenerating) {
+      generateBtn.classList.add('loading');
+      generateBtn.innerHTML = '<span class="generate-btn__text">生成中...</span>';
+    } else {
+      generateBtn.classList.remove('loading');
+      generateBtn.innerHTML = `
+        <span class="generate-btn__text">生成</span>
+        <span class="generate-btn__icon">✨</span>
+      `;
+    }
   }
 
   showError(message) {
@@ -411,11 +420,6 @@ class PopupManager {
         </div>
       </div>
     `;
-  }
-
-  updateGenerateButton(isGenerating) {
-    this.setGenerating(isGenerating);
-    this.elements.generateBtn.disabled = isGenerating;
   }
 
   showResult(result) {
