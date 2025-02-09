@@ -223,6 +223,11 @@ class PopupManager {
       this.showLoading('AI 正在为您生成场景描述...');
 
       const result = await APIClient.generateDescription(word, this.currentScene);
+      
+      if (!result || !result.关键词 || !result.图像描述) {
+        throw new Error('生成的内容格式不正确');
+      }
+
       this.currentDescription = result;
 
       // 更新界面显示结果
@@ -423,6 +428,11 @@ class PopupManager {
   }
 
   showResult(result) {
+    if (!result || typeof result !== 'object') {
+      this.showError('生成的结果格式不正确');
+      return;
+    }
+
     const formattedContent = `
       <div class="result-card__content">
         <div class="result-card__part memory-section">
@@ -431,7 +441,7 @@ class PopupManager {
             <span>助记拆解</span>
           </div>
           <div class="result-card__part-content">
-            ${formatParagraphs(result.关键词)}
+            ${formatParagraphs(result.关键词 || '')}
           </div>
         </div>
         
@@ -441,7 +451,7 @@ class PopupManager {
             <span>场景描述</span>
           </div>
           <div class="result-card__part-content">
-            ${formatParagraphs(result.图像描述)}
+            ${formatParagraphs(result.图像描述 || '')}
           </div>
         </div>
       </div>
@@ -514,6 +524,9 @@ function updateResultCard(result) {
 }
 
 function formatParagraphs(text) {
+  if (!text) {
+    return '';
+  }
   return text.split('\n')
     .filter(line => line.trim())
     .map(line => `<p>${line}</p>`)
