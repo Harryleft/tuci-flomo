@@ -2,6 +2,8 @@
  * 图片服务类
  * 处理所有与图片生成相关的功能
  */
+import TestService from './TestService.js';
+
 class ImageService {
   // API 端点
   static IMAGE_API_URL = 'https://open.bigmodel.cn/api/paas/v4/images/generations';
@@ -46,39 +48,7 @@ class ImageService {
    * @returns {Promise<{status: number, imageUrl: string}>}
    */
   static async testGeneration(options) {
-    const { size, style, apiKey, onProgress = () => {} } = options;
-
-    try {
-      onProgress('准备发送请求...');
-
-      const prompt = this.getPromptByStyle(style);
-      const requestData = this.buildRequestData(prompt, size, style);
-
-      console.log('发送图片生成请求:', {
-        prompt,
-        size,
-        style
-      });
-
-      onProgress('正在生成图片...');
-      const response = await this.sendRequest(requestData, apiKey);
-
-      onProgress('正在处理响应...');
-      const data = await this.processResponse(response);
-
-      return {
-        status: response.status,
-        imageUrl: data.choices[0].image.url
-      };
-
-    } catch (error) {
-      console.error('图片生成请求失败:', error);
-      throw {
-        status: error.status,
-        message: error.message || '请求失败',
-        response: error.response
-      };
-    }
+    return TestService.testImageGeneration(options);
   }
 
   /**
