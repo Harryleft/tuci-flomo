@@ -1,4 +1,6 @@
 import ConfigManager from '/services/ConfigManager.js';
+import { testImageGeneration } from '/services/APIClient.js';
+import ImageService from '/services/ImageService.js';
 
 // 工具函数
 const debounce = (fn, delay) => {
@@ -26,9 +28,27 @@ class Store {
   };
 
   constructor() {
-    this.state = {};
+    this.state = {
+      enableImageGen: false,
+      imageSize: '1024x1024',
+      imageStyle: 'realistic'
+    };
     this.listeners = new Set();
     this.maskedFields = ['deepseekKey', 'glmKey'];
+    
+    // 添加保存防抖
+    this.debouncedSave = debounce(this.saveToStorage.bind(this), 1000);
+  }
+
+  // 新增：将保存到存储的逻辑分离出来
+  async saveToStorage(stateToSave) {
+    try {
+      await chrome.storage.sync.set(stateToSave);
+      return true;
+    } catch (error) {
+      console.error('保存到存储失败:', error);
+      return false;
+    }
   }
 
   // 订阅状态变化
@@ -53,11 +73,11 @@ class Store {
         delete stateToSave[field];
       }
 
-      // 更新状态
+      // 更新内存中的状态
       this.state = { ...this.state, ...stateToSave };
       
-      // 保存非敏感信息到Chrome Storage
-      await chrome.storage.sync.set(stateToSave);
+      // 使用防抖保存到存储
+      const success = await this.debouncedSave(stateToSave);
       
       // 创建用于显示的状态（包含遮罩）
       const displayState = { ...this.state };
@@ -68,7 +88,7 @@ class Store {
       
       // 通知所有监听器
       this.listeners.forEach(listener => listener(displayState));
-      return true;
+      return success;
     } catch (error) {
       console.error('保存状态失败:', error);
       return false;
@@ -110,13 +130,14 @@ class Store {
     }
   }
 
-  // 保存API密钥到安全存储
+  // 修改 saveAPIKey 方法，添加防抖
   async saveAPIKey(keyName, value) {
     try {
-      await chrome.storage.sync.set({ [keyName]: value });
+      await this.debouncedSave({ [keyName]: value });
+      return true;
     } catch (error) {
       console.error(`保存${keyName}失败:`, error);
-      throw error;
+      return false;
     }
   }
 
@@ -162,7 +183,7 @@ class UIManager {
     if (webhookInput) {
       webhookInput.addEventListener('input', debounce(e => {
         this.handleInputChange('webhookUrl', e.target.value);
-      }, 500));
+      }, 1000));
     }
 
     // API Key 输入监听
@@ -173,7 +194,7 @@ class UIManager {
         if (!e.target.value.match(/^[•]+$/)) {
           this.handleInputChange('apiKey', e.target.value);
         }
-      }, 500));
+      }, 1000));
     }
 
     // 默认标签输入监听
@@ -181,7 +202,7 @@ class UIManager {
     if (tagInput) {
       tagInput.addEventListener('input', debounce(e => {
         this.handleInputChange('defaultTag', e.target.value);
-      }, 500));
+      }, 1000));
     }
 
     // 场景卡片点击监听
@@ -200,7 +221,7 @@ class UIManager {
       customInput.addEventListener('click', e => e.stopPropagation());
       customInput.addEventListener('input', debounce(e => {
         this.handleInputChange('customScene', e.target.value);
-      }, 500));
+      }, 1000));
     }
   }
 
@@ -265,6 +286,28 @@ class UIManager {
       aiServiceSelect.value = state.selectedAIService;
       // 触发change事件以更新UI
       aiServiceSelect.dispatchEvent(new Event('change'));
+    }
+
+    // 更新图片生成设置
+    const imageGenCheckbox = document.getElementById('enableImageGen');
+    const imageSettings = document.querySelector('.image-settings');
+    if (imageGenCheckbox && state.enableImageGen !== undefined) {
+      imageGenCheckbox.checked = state.enableImageGen;
+      if (imageSettings) {
+        imageSettings.style.display = state.enableImageGen ? 'block' : 'none';
+      }
+    }
+
+    // 更新图片尺寸选择
+    const imageSizeSelect = document.getElementById('imageSize');
+    if (imageSizeSelect && state.imageSize) {
+      imageSizeSelect.value = state.imageSize;
+    }
+
+    // 更新图片风格选择
+    const imageStyleSelect = document.getElementById('imageStyle');
+    if (imageStyleSelect && state.imageStyle) {
+      imageStyleSelect.value = state.imageStyle;
     }
   }
 
@@ -358,7 +401,7 @@ class UIManager {
         await this.store.setState({ deepseekKey: e.target.value.trim() });
         this.showSaveStatus('API Key已保存', 'success');
       }
-    }, 500));
+    }, 1000));
 
     // GLM API Key输入处理
     glmKeyInput?.addEventListener('input', debounce(async (e) => {
@@ -366,7 +409,7 @@ class UIManager {
         await this.store.setState({ glmKey: e.target.value.trim() });
         this.showSaveStatus('API Key已保存', 'success');
       }
-    }, 500));
+    }, 1000));
 
     // 初始化API测试按钮
     document.querySelectorAll('.test-api').forEach(button => {
@@ -393,6 +436,36 @@ class UIManager {
         }
       });
     });
+
+    // 添加图片生成设置监听
+    const imageGenCheckbox = document.getElementById('enableImageGen');
+    const imageSettings = document.querySelector('.image-settings');
+    
+    if (imageGenCheckbox) {
+      imageGenCheckbox.addEventListener('change', (e) => {
+        // 显示/隐藏图片设置
+        if (imageSettings) {
+          imageSettings.style.display = e.target.checked ? 'block' : 'none';
+        }
+        this.store.setState({ enableImageGen: e.target.checked });
+      });
+    }
+
+    // 图片尺寸选择监听
+    const imageSizeSelect = document.getElementById('imageSize');
+    if (imageSizeSelect) {
+      imageSizeSelect.addEventListener('change', (e) => {
+        this.store.setState({ imageSize: e.target.value });
+      });
+    }
+
+    // 图片风格选择监听
+    const imageStyleSelect = document.getElementById('imageStyle');
+    if (imageStyleSelect) {
+      imageStyleSelect.addEventListener('change', (e) => {
+        this.store.setState({ imageStyle: e.target.value });
+      });
+    }
   }
 }
 
@@ -433,6 +506,86 @@ async function testApiConnection(apiKey) {
     showTestResult(false, errorMessage);
   }
 }
+
+// 测试图片生成功能
+document.getElementById('testImageGen').addEventListener('click', async () => {
+  const imagePreview = document.getElementById('imagePreview');
+  const previewImg = document.getElementById('previewImg');
+  const loadingEl = imagePreview.querySelector('.preview-loading');
+  const resultEl = document.querySelector('.api-test-result');
+  
+  try {
+    // 显示加载状态
+    loadingEl.style.display = 'block';
+    imagePreview.style.display = 'block';
+    resultEl.textContent = '准备测试...';
+    resultEl.className = 'api-test-result testing';
+    
+    // 获取当前设置
+    const size = document.getElementById('imageSize').value;
+    const style = document.getElementById('imageStyle').value;
+
+    // 使用快速测试方法
+    const response = await ImageService.quickTest({
+      size,
+      style,
+      onProgress: (stage) => {
+        resultEl.textContent = stage;
+      }
+    });
+
+    // 显示生成的图片
+    resultEl.textContent = '正在加载图片...';
+    previewImg.onload = () => {
+      resultEl.textContent = '✅ 测试成功';
+      resultEl.className = 'api-test-result success';
+      console.log('图片加载成功');
+    };
+    previewImg.onerror = (e) => {
+      console.error('图片加载失败:', e);
+      throw new Error('图片加载失败');
+    };
+    previewImg.src = response.imageUrl;
+    previewImg.style.display = 'block';
+    
+  } catch (error) {
+    console.error('图片生成测试失败:', {
+      message: error.message,
+      status: error.status,
+      response: error.response,
+      stack: error.stack
+    });
+
+    // 显示详细错误信息
+    let errorMessage = '❌ ';
+    if (error.status === 401) {
+      errorMessage += 'API Key 无效';
+    } else if (error.status === 429) {
+      errorMessage += 'API 调用次数超限';
+    } else if (error.status === 500) {
+      errorMessage += '服务器内部错误';
+    } else if (!navigator.onLine) {
+      errorMessage += '网络连接失败';
+    } else {
+      errorMessage += error.message || '未知错误';
+    }
+
+    resultEl.textContent = errorMessage;
+    resultEl.className = 'api-test-result error';
+    previewImg.style.display = 'none';
+    
+  } finally {
+    loadingEl.style.display = 'none';
+  }
+});
+
+// 图片加载完成后的处理
+document.getElementById('previewImg').addEventListener('load', function() {
+  this.style.display = 'block';
+  // 调整预览区域大小
+  const imagePreview = document.getElementById('imagePreview');
+  imagePreview.style.minHeight = this.height + 'px';
+});
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {

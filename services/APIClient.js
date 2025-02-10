@@ -3,6 +3,7 @@ import ConfigManager from './ConfigManager.js';
 class APIClient {
   static BASE_URL = 'https://api.siliconflow.cn/v1/chat/completions';
   static GLM_URL = 'https://open.bigmodel.cn/api/paas/v4/async/chat/completions';
+  static GLM_IMAGE_URL = 'https://open.bigmodel.cn/api/paas/v4/images/generations';
 
   // 统一的场景设置
   static sceneSettings = {
@@ -159,25 +160,72 @@ class APIClient {
   }
 
   static async generateImage(description) {
-    // TODO: 实现调用智谱 GLM API 生成图片
+    try {
+      console.log('开始生成图片:', { description });
+
+      // 验证 API Key
+      const apiKey = await ConfigManager.getGLMAPIKey();
+      if (!apiKey) {
+        throw new Error('请先设置 GLM API Key');
+      }
+
+      // 构建请求选项
+      const options = {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'cogView-4',
+          prompt: description,
+          size: '1024x1024', // 默认尺寸，可以根据需要调整
+          n: 1 // 生成图片数量
+        })
+      };
+
+      // 发送请求
+      console.log('发送图片生成请求...');
+      const response = await fetch(this.GLM_IMAGE_URL, options);
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('图片生成失败:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData
+        });
+        throw new Error('图片生成失败，请稍后重试');
+      }
+
+      const data = await response.json();
+      console.log('图片生成响应:', data);
+
+      if (!data.data || !data.data[0]?.url) {
+        throw new Error('图片生成响应格式错误');
+      }
+
+      return data.data[0].url;
+    } catch (error) {
+      console.error('图片生成失败:', error);
+      throw error;
+    }
   }
 
-  static async submitToFlomo(data) {
+  static async submitToFlomo(data, imageUrl = null) {
     try {
-      console.log('开始提交到 Flomo:', data);
+      console.log('开始提交到 Flomo:', { data, imageUrl });
       
       // 获取 Webhook URL
       const webhookUrl = await ConfigManager.getWebhookUrl();
       if (!webhookUrl) {
-        console.warn('未配置 Flomo Webhook URL');
         throw new Error('请先设置 Flomo API');
       }
-      console.log('Webhook URL 验证通过');
 
       // 获取默认标签
       const defaultTag = await ConfigManager.getDefaultTag() || '#英语单词';
 
-      // 构建提交内容，使用 Markdown 格式美化
+      // 构建提交内容，添加图片支持
       const content = `📝 ${data.英语}
 
 ---
@@ -187,6 +235,7 @@ ${data.关键词}
 🌟 场景描述：
 ${data.图像描述}
 
+${imageUrl ? `\n![场景图片](${imageUrl})\n` : ''}
 
 ${defaultTag} #场景记忆`;
 
@@ -225,11 +274,7 @@ ${defaultTag} #场景记忆`;
       console.log('提交到 Flomo 成功');
       return true;
     } catch (error) {
-      console.error('提交到 Flomo 时出错:', {
-        error: error.message,
-        stack: error.stack,
-        data
-      });
+      console.error('提交到 Flomo 时出错:', error);
       throw error;
     }
   }
@@ -333,6 +378,110 @@ ${defaultTag} #场景记忆`;
         图像描述: content
       };
     }
+  }
+}
+
+/**
+ * 测试图片生成功能
+ */
+export async function testImageGeneration(options) {
+  const { size, style, apiKey, onProgress = () => {} } = options;
+
+  try {
+    onProgress('准备发送请求...');
+
+    // 根据风格构建提示词
+    let prompt;
+    switch (style) {
+      case 'realistic':
+        prompt = "A cute cat in natural lighting with soft background, photorealistic style, high quality, detailed texture";
+        break;
+      case 'cartoon':
+        prompt = "A cute cartoon cat with bright colors and simple lines, Disney style";
+        break;
+      case 'anime':
+        prompt = "A cute anime cat with big eyes, Japanese illustration style, soft color palette";
+        break;
+      case 'oil':
+        prompt = "A cute cat in oil painting style, thick brushstrokes, rich color layers, impressionist style";
+        break;
+      default:
+        prompt = "A cute cat in natural lighting, photorealistic style";
+    }
+
+    // 构建请求参数
+    const requestData = {
+      model: "glm-4v",
+      messages: [{
+        role: "user",
+        content: [{
+          type: "text",
+          text: prompt
+        }]
+      }],
+      parameters: {
+        size: size,
+        style: style,
+        return_type: "url"
+      }
+    };
+
+    console.log('发送图片生成请求:', {
+      prompt,
+      size,
+      style
+    });
+
+    onProgress('正在生成图片...');
+
+    // 直接使用对象而不是 Headers 构造函数
+    const response = await fetch(APIClient.GLM_IMAGE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey.trim()}`  // 确保移除空白字符
+      },
+      body: JSON.stringify(requestData)
+    });
+
+    // 检查响应状态
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('图片生成API响应错误:', {
+        status: response.status,
+        error: errorData
+      });
+      throw {
+        status: response.status,
+        message: errorData.error?.message || `请求失败: ${response.status}`,
+        response: errorData
+      };
+    }
+
+    onProgress('正在处理响应...');
+
+    // 解析响应数据
+    const data = await response.json();
+    console.log('图片生成API响应:', data);
+    
+    // 检查返回数据
+    if (!data.choices?.[0]?.image?.url) {
+      throw new Error('API返回数据格式错误');
+    }
+
+    // 返回图片URL
+    return {
+      status: response.status,
+      imageUrl: data.choices[0].image.url
+    };
+
+  } catch (error) {
+    console.error('图片生成请求失败:', error);
+    throw {
+      status: error.status,
+      message: error.message || '请求失败',
+      response: error.response
+    };
   }
 }
 

@@ -383,6 +383,11 @@ footer {
   opacity: 1;
 }
 
+.api-test-result.testing {
+  color: #666;
+  opacity: 1;
+}
+
 /* 快捷键设置样式 */
 .shortcuts-container {
   margin-top: 1rem;
@@ -473,4 +478,69 @@ kbd {
 
 .api-setting.active {
   display: block;
+}
+
+/* 图片生成设置样式 */
+.image-settings {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.image-settings .form-group {
+  margin-bottom: 16px;
+}
+
+.image-settings .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.image-settings select {
+  margin-top: 8px;
+}
+
+.image-preview {
+  position: relative;
+  min-height: 100px;
+  transition: min-height 0.3s ease;
+}
+
+.image-preview img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.preview-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  color: #666;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.loading-icon {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.api-test-result.testing {
+  animation: pulse 1.5s infinite;
 } 

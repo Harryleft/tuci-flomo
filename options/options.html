@@ -83,6 +83,65 @@
             </div>
           </div>
         </div>
+
+        <!-- 图片生成设置 -->
+        <div class="form-group">
+          <label>图片生成设置</label>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="enableImageGen" name="enableImageGen">
+              <span>启用场景图片生成</span>
+            </label>
+          </div>
+          <div class="image-settings" style="display: none;">
+            <div class="form-group">
+              <label for="imageSize">图片尺寸</label>
+              <select id="imageSize" class="select-full">
+                <option value="1024x1024">1024x1024 (方形)</option>
+                <option value="768x1344">768x1344 (竖版)</option>
+                <option value="1344x768">1344x768 (横版)</option>
+                <option value="1440x720">1440x720 (宽屏)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="imageStyle">图片风格</label>
+              <select id="imageStyle" class="select-full">
+                <option value="realistic">写实风格</option>
+                <option value="cartoon">卡通风格</option>
+                <option value="anime">动漫风格</option>
+                <option value="oil">油画风格</option>
+              </select>
+            </div>
+            
+            <!-- 添加测试图片生成的按钮和预览区域 -->
+            <div class="form-group">
+              <div class="api-test">
+                <button class="btn-secondary test-image" id="testImageGen">
+                  <span class="btn-icon">🎨</span>
+                  测试图片生成
+                </button>
+                <span class="api-test-result"></span>
+              </div>
+              <div id="imagePreview" class="image-preview" style="display: none;">
+                <img id="previewImg" alt="测试图片预览" />
+                <div class="preview-loading" style="display: none;">
+                  <span class="loading-icon">🔄</span>
+                  生成中...
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <div class="notice">
+                <span class="notice-icon">💡</span>
+                <div class="notice-content">
+                  图片生成功能由智谱GLM-4提供支持，需要配置GLM API Key
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="input-hint">启用后将使用GLM-4生成场景对应的图片</div>
+        </div>
       </section>
 
       <!-- 标签设置 -->
