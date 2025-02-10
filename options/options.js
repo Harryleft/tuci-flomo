@@ -1,5 +1,4 @@
 import ConfigManager from '/services/ConfigManager.js';
-import { testImageGeneration } from '/services/APIClient.js';
 import ImageService from '/services/ImageService.js';
 
 // 工具函数
