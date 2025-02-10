@@ -446,4 +446,31 @@ kbd {
 .shortcut-desc {
   color: #6c757d;
   font-size: 0.875rem;
+}
+
+/* AI服务选择器样式 */
+.select-full {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 14px;
+}
+
+/* API设置组样式 */
+.api-settings {
+  margin-top: 16px;
+}
+
+.api-setting {
+  display: none;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.api-setting.active {
+  display: block;
 } 

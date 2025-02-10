@@ -1,11 +1,34 @@
 import ConfigManager from '/services/ConfigManager.js';
 
+// 工具函数
+const debounce = (fn, delay) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), delay);
+  };
+};
+
 // 状态管理类
 class Store {
+  // AI服务配置
+  static AI_SERVICES = {
+    deepseek: {
+      name: 'DeepSeek AI',
+      keyName: 'deepseekKey',
+      testEndpoint: 'https://api.siliconflow.cn/v1/chat/completions'
+    },
+    glm: {
+      name: '智谱 GLM-4',
+      keyName: 'glmKey',
+      testEndpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
+    }
+  };
+
   constructor() {
     this.state = {};
     this.listeners = new Set();
-    this.maskedFields = ['apiKey']; // 需要遮罩的字段
+    this.maskedFields = ['deepseekKey', 'glmKey'];
   }
 
   // 订阅状态变化
@@ -14,27 +37,33 @@ class Store {
     return () => this.listeners.delete(listener);
   }
 
-  // 更新状态
+  // 更新状态并持久化
   async setState(newState) {
-    // 处理需要遮罩的字段
-    const stateToSave = { ...newState };
-    for (const field of this.maskedFields) {
-      if (stateToSave[field] === '••••••••') {
+    try {
+      // 处理需要遮罩的字段
+      const stateToSave = { ...newState };
+      
+      // 如果是API密钥字段且不是遮罩值，则保存
+      for (const field of this.maskedFields) {
+        if (stateToSave[field] && stateToSave[field] !== '••••••••') {
+          // 加密存储API密钥
+          await this.saveAPIKey(field, stateToSave[field]);
+        }
+        // 从普通状态中移除敏感信息
         delete stateToSave[field];
       }
-    }
 
-    try {
+      // 更新状态
       this.state = { ...this.state, ...stateToSave };
-      // 保存到 Chrome Storage
-      await chrome.storage.sync.set(this.state);
+      
+      // 保存非敏感信息到Chrome Storage
+      await chrome.storage.sync.set(stateToSave);
       
       // 创建用于显示的状态（包含遮罩）
       const displayState = { ...this.state };
       for (const field of this.maskedFields) {
-        if (displayState[field]) {
-          displayState[field] = '••••••••';
-        }
+        const key = await this.getAPIKey(field);
+        displayState[field] = key ? '••••••••' : '';
       }
       
       // 通知所有监听器
@@ -53,11 +82,18 @@ class Store {
       defaultTag: '#英语单词',
       selectedScene: 'default',
       customScene: '',
-      apiKey: ''
+      selectedAIService: 'deepseek'
     };
 
     try {
+      // 加载普通状态
       this.state = await chrome.storage.sync.get(defaultState);
+      
+      // 加载API密钥
+      for (const field of this.maskedFields) {
+        const key = await this.getAPIKey(field);
+        this.state[field] = key || '';
+      }
       
       // 创建用于显示的状态（包含遮罩）
       const displayState = { ...this.state };
@@ -71,6 +107,27 @@ class Store {
     } catch (error) {
       console.error('加载状态失败:', error);
       this.state = defaultState;
+    }
+  }
+
+  // 保存API密钥到安全存储
+  async saveAPIKey(keyName, value) {
+    try {
+      await chrome.storage.sync.set({ [keyName]: value });
+    } catch (error) {
+      console.error(`保存${keyName}失败:`, error);
+      throw error;
+    }
+  }
+
+  // 从安全存储获取API密钥
+  async getAPIKey(keyName) {
+    try {
+      const result = await chrome.storage.sync.get(keyName);
+      return result[keyName];
+    } catch (error) {
+      console.error(`获取${keyName}失败:`, error);
+      return null;
     }
   }
 }
@@ -94,17 +151,12 @@ class UIManager {
 
     // 初始化 API 测试按钮
     this.initApiTest();
+
+    // 初始化AI服务选择器
+    this.initAIServiceSelector();
   }
 
   initInputListeners() {
-    const debounce = (fn, delay) => {
-      let timeout;
-      return (...args) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => fn(...args), delay);
-      };
-    };
-
     // Webhook URL 输入监听
     const webhookInput = document.getElementById('webhookUrl');
     if (webhookInput) {
@@ -194,6 +246,26 @@ class UIManager {
     if (customInput && state.selectedScene === 'custom') {
       customInput.value = state.customScene;
     }
+
+    // 更新API Key输入框
+    const deepseekKeyInput = document.getElementById('deepseekKey');
+    const glmKeyInput = document.getElementById('glmKey');
+    
+    if (deepseekKeyInput && state.deepseekKey) {
+      deepseekKeyInput.value = state.deepseekKey;
+    }
+    
+    if (glmKeyInput && state.glmKey) {
+      glmKeyInput.value = state.glmKey;
+    }
+
+    // 更新AI服务选择
+    const aiServiceSelect = document.getElementById('aiService');
+    if (aiServiceSelect && state.selectedAIService) {
+      aiServiceSelect.value = state.selectedAIService;
+      // 触发change事件以更新UI
+      aiServiceSelect.dispatchEvent(new Event('change'));
+    }
   }
 
   updateSceneUI(selectedScene) {
@@ -253,6 +325,74 @@ class UIManager {
         }
       });
     }
+  }
+
+  initAIServiceSelector() {
+    const aiServiceSelect = document.getElementById('aiService');
+    const apiSettings = document.querySelectorAll('.api-setting');
+
+    // 根据选择显示对应的API设置
+    const updateApiSettings = (selectedValue) => {
+      apiSettings.forEach(setting => {
+        setting.classList.toggle('active', 
+          setting.dataset.service === selectedValue);
+      });
+    };
+
+    // 初始化显示
+    updateApiSettings(aiServiceSelect.value);
+
+    // 监听选择变化
+    aiServiceSelect.addEventListener('change', (e) => {
+      updateApiSettings(e.target.value);
+      this.store.setState({ selectedAIService: e.target.value });
+    });
+
+    // 监听API Key输入
+    const deepseekKeyInput = document.getElementById('deepseekKey');
+    const glmKeyInput = document.getElementById('glmKey');
+
+    // DeepSeek API Key输入处理
+    deepseekKeyInput?.addEventListener('input', debounce(async (e) => {
+      if (!e.target.value.match(/^[•]+$/)) {
+        await this.store.setState({ deepseekKey: e.target.value.trim() });
+        this.showSaveStatus('API Key已保存', 'success');
+      }
+    }, 500));
+
+    // GLM API Key输入处理
+    glmKeyInput?.addEventListener('input', debounce(async (e) => {
+      if (!e.target.value.match(/^[•]+$/)) {
+        await this.store.setState({ glmKey: e.target.value.trim() });
+        this.showSaveStatus('API Key已保存', 'success');
+      }
+    }, 500));
+
+    // 初始化API测试按钮
+    document.querySelectorAll('.test-api').forEach(button => {
+      button.addEventListener('click', async () => {
+        const service = button.dataset.service;
+        const resultSpan = button.nextElementSibling;
+        
+        try {
+          resultSpan.textContent = '测试中...';
+          resultSpan.className = 'api-test-result testing';
+          
+          if (service === 'deepseek') {
+            await ConfigManager.testDeepSeekConnection();
+          } else if (service === 'glm') {
+            await ConfigManager.testGLMConnection();
+          }
+          
+          resultSpan.textContent = '连接成功';
+          resultSpan.className = 'api-test-result success';
+        } catch (error) {
+          resultSpan.textContent = '连接失败';
+          resultSpan.className = 'api-test-result error';
+          console.error(`${service} API测试失败:`, error);
+        }
+      });
+    });
   }
 }
 
