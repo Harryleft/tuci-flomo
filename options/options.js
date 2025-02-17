@@ -13,12 +13,7 @@ const debounce = (fn, delay) => {
 // 状态管理类
 class Store {
   // AI服务配置
-  static AI_SERVICES = {
-    deepseek: {
-      name: 'DeepSeek AI',
-      keyName: 'deepseekKey',
-      testEndpoint: 'https://api.siliconflow.cn/v1/chat/completions'
-    },
+  static AI_SERVICES = {    
     glm: {
       name: '智谱 GLM-4',
       keyName: 'glmKey',
