@@ -23,6 +23,11 @@ class Store {
       name: '智谱 GLM-4',
       keyName: 'glmKey',
       testEndpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
+    },
+    volcengine: {
+      name: '火山云',
+      keyName: 'volcengineKey',
+      testEndpoint: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions'
     }
   };
 
@@ -30,10 +35,12 @@ class Store {
     this.state = {
       enableImageGen: false,
       imageSize: '1024x1024',
-      imageStyle: 'realistic'
+      imageStyle: 'realistic',
+      volcengineKey: '',
+      glmKey: ''
     };
     this.listeners = new Set();
-    this.maskedFields = ['deepseekKey', 'glmKey'];
+    this.maskedFields = ['volcengineKey', 'glmKey'];
     
     // 添加保存防抖
     this.debouncedSave = debounce(this.saveToStorage.bind(this), 1000);
@@ -59,35 +66,31 @@ class Store {
   // 更新状态并持久化
   async setState(newState) {
     try {
+      // 更新内存中的状态
+      this.state = { ...this.state, ...newState };
+      
       // 处理需要遮罩的字段
       const stateToSave = { ...newState };
       
-      // 如果是API密钥字段且不是遮罩值，则保存
-      for (const field of this.maskedFields) {
-        if (stateToSave[field] && stateToSave[field] !== '••••••••') {
-          // 加密存储API密钥
-          await this.saveAPIKey(field, stateToSave[field]);
-        }
-        // 从普通状态中移除敏感信息
-        delete stateToSave[field];
+      // 直接保存 API Key，不使用遮罩处理
+      if (stateToSave.volcengineKey || stateToSave.glmKey) {
+        await chrome.storage.sync.set(stateToSave);
+      } else {
+        // 使用防抖保存其他状态
+        await this.debouncedSave(stateToSave);
       }
-
-      // 更新内存中的状态
-      this.state = { ...this.state, ...stateToSave };
-      
-      // 使用防抖保存到存储
-      const success = await this.debouncedSave(stateToSave);
       
       // 创建用于显示的状态（包含遮罩）
       const displayState = { ...this.state };
       for (const field of this.maskedFields) {
-        const key = await this.getAPIKey(field);
-        displayState[field] = key ? '••••••••' : '';
+        if (displayState[field]) {
+          displayState[field] = '••••••••';
+        }
       }
       
       // 通知所有监听器
       this.listeners.forEach(listener => listener(displayState));
-      return success;
+      return true;
     } catch (error) {
       console.error('保存状态失败:', error);
       return false;
@@ -101,18 +104,17 @@ class Store {
       defaultTag: '#英语单词',
       selectedScene: 'default',
       customScene: '',
-      selectedAIService: 'deepseek'
+      volcengineKey: '',
+      glmKey: '',
+      enableImageGen: false,
+      imageSize: '1024x1024',
+      imageStyle: 'realistic'
     };
 
     try {
-      // 加载普通状态
-      this.state = await chrome.storage.sync.get(defaultState);
-      
-      // 加载API密钥
-      for (const field of this.maskedFields) {
-        const key = await this.getAPIKey(field);
-        this.state[field] = key || '';
-      }
+      // 加载所有状态，包括 API Keys
+      const savedState = await chrome.storage.sync.get(defaultState);
+      this.state = { ...defaultState, ...savedState };
       
       // 创建用于显示的状态（包含遮罩）
       const displayState = { ...this.state };
@@ -126,17 +128,6 @@ class Store {
     } catch (error) {
       console.error('加载状态失败:', error);
       this.state = defaultState;
-    }
-  }
-
-  // 修改 saveAPIKey 方法，添加防抖
-  async saveAPIKey(keyName, value) {
-    try {
-      await this.debouncedSave({ [keyName]: value });
-      return true;
-    } catch (error) {
-      console.error(`保存${keyName}失败:`, error);
-      return false;
     }
   }
 
@@ -172,8 +163,8 @@ class UIManager {
     // 初始化 API 测试按钮
     this.initApiTest();
 
-    // 初始化AI服务选择器
-    this.initAIServiceSelector();
+    // 初始化图片生成设置
+    this.initImageGenSettings();
   }
 
   initInputListeners() {
@@ -222,6 +213,30 @@ class UIManager {
         this.handleInputChange('customScene', e.target.value);
       }, 1000));
     }
+
+    // 添加 API Key 输入监听
+    const volcengineKeyInput = document.getElementById('volcengineKey');
+    const glmKeyInput = document.getElementById('glmKey');
+
+    // 火山云 API Key 输入监听
+    if (volcengineKeyInput) {
+      volcengineKeyInput.addEventListener('input', debounce(async (e) => {
+        if (!e.target.value.match(/^[•]+$/)) {
+          await this.store.setState({ volcengineKey: e.target.value.trim() });
+          this.showSaveStatus('API Key已保存', 'success');
+        }
+      }, 1000));
+    }
+
+    // GLM API Key 输入监听
+    if (glmKeyInput) {
+      glmKeyInput.addEventListener('input', debounce(async (e) => {
+        if (!e.target.value.match(/^[•]+$/)) {
+          await this.store.setState({ glmKey: e.target.value.trim() });
+          this.showSaveStatus('API Key已保存', 'success');
+        }
+      }, 1000));
+    }
   }
 
   async handleInputChange(key, value) {
@@ -267,17 +282,13 @@ class UIManager {
       customInput.value = state.customScene;
     }
 
-    // 更新API Key输入框
-    const deepseekKeyInput = document.getElementById('deepseekKey');
-    const glmKeyInput = document.getElementById('glmKey');
-    
-    if (deepseekKeyInput && state.deepseekKey) {
-      deepseekKeyInput.value = state.deepseekKey;
-    }
-    
-    if (glmKeyInput && state.glmKey) {
-      glmKeyInput.value = state.glmKey;
-    }
+    // 更新所有 API Key 输入框
+    ['volcengineKey', 'glmKey'].forEach(key => {
+      const input = document.getElementById(key);
+      if (input && state[key]) {
+        input.value = state[key];
+      }
+    });
 
     // 更新AI服务选择
     const aiServiceSelect = document.getElementById('aiService');
@@ -369,80 +380,12 @@ class UIManager {
     }
   }
 
-  initAIServiceSelector() {
-    const aiServiceSelect = document.getElementById('aiService');
-    const apiSettings = document.querySelectorAll('.api-setting');
-
-    // 根据选择显示对应的API设置
-    const updateApiSettings = (selectedValue) => {
-      apiSettings.forEach(setting => {
-        setting.classList.toggle('active', 
-          setting.dataset.service === selectedValue);
-      });
-    };
-
-    // 初始化显示
-    updateApiSettings(aiServiceSelect.value);
-
-    // 监听选择变化
-    aiServiceSelect.addEventListener('change', (e) => {
-      updateApiSettings(e.target.value);
-      this.store.setState({ selectedAIService: e.target.value });
-    });
-
-    // 监听API Key输入
-    const deepseekKeyInput = document.getElementById('deepseekKey');
-    const glmKeyInput = document.getElementById('glmKey');
-
-    // DeepSeek API Key输入处理
-    deepseekKeyInput?.addEventListener('input', debounce(async (e) => {
-      if (!e.target.value.match(/^[•]+$/)) {
-        await this.store.setState({ deepseekKey: e.target.value.trim() });
-        this.showSaveStatus('API Key已保存', 'success');
-      }
-    }, 1000));
-
-    // GLM API Key输入处理
-    glmKeyInput?.addEventListener('input', debounce(async (e) => {
-      if (!e.target.value.match(/^[•]+$/)) {
-        await this.store.setState({ glmKey: e.target.value.trim() });
-        this.showSaveStatus('API Key已保存', 'success');
-      }
-    }, 1000));
-
-    // 初始化API测试按钮
-    document.querySelectorAll('.test-api').forEach(button => {
-      button.addEventListener('click', async () => {
-        const service = button.dataset.service;
-        const resultSpan = button.nextElementSibling;
-        
-        try {
-          resultSpan.textContent = '测试中...';
-          resultSpan.className = 'api-test-result testing';
-          
-          if (service === 'deepseek') {
-            await ConfigManager.testDeepSeekConnection();
-          } else if (service === 'glm') {
-            await ConfigManager.testGLMConnection();
-          }
-          
-          resultSpan.textContent = '连接成功';
-          resultSpan.className = 'api-test-result success';
-        } catch (error) {
-          resultSpan.textContent = '连接失败';
-          resultSpan.className = 'api-test-result error';
-          console.error(`${service} API测试失败:`, error);
-        }
-      });
-    });
-
-    // 添加图片生成设置监听
+  initImageGenSettings() {
     const imageGenCheckbox = document.getElementById('enableImageGen');
     const imageSettings = document.querySelector('.image-settings');
     
     if (imageGenCheckbox) {
       imageGenCheckbox.addEventListener('change', (e) => {
-        // 显示/隐藏图片设置
         if (imageSettings) {
           imageSettings.style.display = e.target.checked ? 'block' : 'none';
         }
@@ -463,6 +406,82 @@ class UIManager {
     if (imageStyleSelect) {
       imageStyleSelect.addEventListener('change', (e) => {
         this.store.setState({ imageStyle: e.target.value });
+      });
+    }
+
+    // 初始化 API 测试按钮
+    document.querySelectorAll('.test-api').forEach(button => {
+      button.addEventListener('click', async () => {
+        const service = button.dataset.service;
+        const resultSpan = button.nextElementSibling;
+        button.disabled = true;
+        
+        try {
+          resultSpan.textContent = '测试中...';
+          resultSpan.className = 'api-test-result testing';
+          
+          let result;
+          switch (service) {
+            case 'glm':
+              result = await ConfigManager.testGLMConnection();
+              break;
+            case 'volcengine':
+              result = await ConfigManager.testVolcengineConnection();
+              break;
+            default:
+              throw new Error('未知的 API 服务');
+          }
+          
+          if (result.success) {
+            resultSpan.textContent = result.message;
+            resultSpan.className = 'api-test-result success';
+          } else {
+            throw new Error(result.message);
+          }
+        } catch (error) {
+          resultSpan.textContent = error.message || '连接失败';
+          resultSpan.className = 'api-test-result error';
+          console.error(`${service} API测试失败:`, error);
+        } finally {
+          button.disabled = false;
+          // 3秒后隐藏结果
+          setTimeout(() => {
+            resultSpan.style.opacity = '0';
+          }, 3000);
+        }
+      });
+    });
+
+    // 测试图片生成按钮
+    const testImageBtn = document.getElementById('testImageGen');
+    if (testImageBtn) {
+      testImageBtn.addEventListener('click', async () => {
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        const loadingEl = imagePreview.querySelector('.preview-loading');
+        
+        try {
+          loadingEl.style.display = 'block';
+          imagePreview.style.display = 'block';
+          
+          const size = document.getElementById('imageSize').value;
+          const style = document.getElementById('imageStyle').value;
+          const apiKey = await ConfigManager.getGLMAPIKey();
+
+          const response = await TestService.testImageGeneration({
+            size,
+            style,
+            apiKey
+          });
+
+          previewImg.src = response.imageUrl;
+          previewImg.style.display = 'block';
+        } catch (error) {
+          console.error('图片生成测试失败:', error);
+          alert(error.message || '图片生成失败，请检查设置');
+        } finally {
+          loadingEl.style.display = 'none';
+        }
       });
     }
   }

@@ -1,9 +1,10 @@
 import ConfigManager from './ConfigManager.js';
+import API_ENDPOINTS from '../config/endpoints.js';
 
 class APIClient {
-  static BASE_URL = 'https://api.siliconflow.cn/v1/chat/completions';
-  static GLM_URL = 'https://open.bigmodel.cn/api/paas/v4/async/chat/completions';
-  static GLM_IMAGE_URL = 'https://open.bigmodel.cn/api/paas/v4/images/generations';
+  static GLM_URL = API_ENDPOINTS.GLM.CHAT;
+  static GLM_IMAGE_URL = API_ENDPOINTS.GLM.IMAGE;
+  static VOLCENGINE_URL = API_ENDPOINTS.VOLCENGINE.CHAT;
 
   // 统一的场景设置
   static sceneSettings = {
@@ -88,70 +89,8 @@ class APIClient {
     try {
       console.log('开始生成描述:', { word, scene });
 
-      // 验证 API Key
-      const apiKey = await ConfigManager.getAPIKey();
-      if (!apiKey) {
-        throw new Error('请先设置 API Key');
-      }
-
-      // 构建提示词
-      const prompt = this._buildPrompt(word, scene);
-      console.log('构建的提示词:', prompt);
-
-      // 构建请求选项
-      const options = {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'deepseek-ai/DeepSeek-V3',
-          messages: [
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 1000
-        })
-      };
-
-      // 发送请求
-      console.log('发送 API 请求...');
-      const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', options);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('API 响应错误:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData
-        });
-        throw new Error('生成描述失败，请稍后重试');
-      }
-
-      const data = await response.json();
-      console.log('API 响应数据:', data);
-
-      if (!data.choices || !data.choices[0]?.message?.content) {
-        throw new Error('API 返回数据格式错误');
-      }
-
-      // 处理响应
-      const content = data.choices[0].message.content;
-      console.log('生成的原始内容:', content);
-
-      try {
-        // 尝试解析 JSON
-        const result = JSON.parse(content);
-        console.log('解析后的结果:', result);
-        return result;
-      } catch (parseError) {
-        console.error('JSON 解析失败:', parseError);
-        throw new Error('生成的内容格式不正确');
-      }
+      // 使用火山云服务生成描述
+      return await this.generateDescriptionWithVolcengine(word, scene);
 
     } catch (error) {
       console.error('生成描述失败:', error);
@@ -301,7 +240,7 @@ ${defaultTag} #场景记忆`;
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'glm-4-flash',
+          model: API_ENDPOINTS.GLM.model,
           messages: [
             {
               role: 'system',
@@ -354,6 +293,109 @@ ${defaultTag} #场景记忆`;
       }
     } catch (error) {
       console.error('GLM生成描述失败:', error);
+      throw error;
+    }
+  }
+
+  static async generateDescriptionWithVolcengine(word, scene = 'default') {
+    try {
+      console.log('开始使用火山云生成描述:', { word, scene });
+
+      const apiKey = await ConfigManager.getVolcengineAPIKey();
+      if (!apiKey) {
+        throw new Error('请先设置火山云 API Key');
+      }
+
+      const prompt = this._buildPrompt(word, scene);
+      console.log('构建的火山云提示词:', prompt);
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), API_ENDPOINTS.VOLCENGINE.timeout);
+
+      const options = {
+        method: 'POST',
+        headers: {
+          'Authorization': API_ENDPOINTS.VOLCENGINE.auth(apiKey),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: API_ENDPOINTS.VOLCENGINE.model,
+          messages: [
+            {
+              role: 'system',
+              content: '你是一个专业的英语单词记忆助手，擅长创造生动有趣的场景来帮助记忆单词。'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          top_p: 0.95,
+          max_tokens: 1024,
+          stream: true  // 启用流式输出
+        }),
+        signal: controller.signal
+      };
+
+      const response = await fetch(this.VOLCENGINE_URL, options);
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('火山云 API 响应错误:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData
+        });
+        throw new Error('生成描述失败，请稍后重试');
+      }
+
+      // 处理流式响应
+      const reader = response.body.getReader();
+      let reasoning = '';
+      let finalContent = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        // 解析数据
+        const chunk = new TextDecoder().decode(value);
+        const lines = chunk.split('\n').filter(line => line.trim());
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = JSON.parse(line.slice(6));
+            
+            if (data.choices?.[0]?.delta?.reasoning_content) {
+              reasoning += data.choices[0].delta.reasoning_content;
+              // 触发推理过程更新
+              this.onReasoningUpdate?.(reasoning);
+            }
+            
+            if (data.choices?.[0]?.delta?.content) {
+              finalContent += data.choices[0].delta.content;
+            }
+          }
+        }
+      }
+
+      console.log('火山云推理过程:', reasoning);
+      console.log('火山云生成的内容:', finalContent);
+
+      try {
+        // 清理 JSON 字符串
+        const cleanContent = finalContent.replace(/```json\n|\n```/g, '').trim();
+        const result = JSON.parse(cleanContent);
+        console.log('火山云解析后的结果:', result);
+        return result;
+      } catch (parseError) {
+        console.error('火山云 JSON 解析失败:', parseError);
+        throw new Error('生成的内容格式不正确');
+      }
+    } catch (error) {
+      console.error('火山云生成描述失败:', error);
       throw error;
     }
   }

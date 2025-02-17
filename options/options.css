@@ -465,19 +465,29 @@ kbd {
 
 /* API设置组样式 */
 .api-settings {
-  margin-top: 16px;
+  position: relative;
+  min-height: 200px;
 }
 
 .api-setting {
-  display: none;
-  padding: 16px;
-  background: #f8f9fa;
+  background-color: #f8f9fa;
   border-radius: 8px;
-  margin-top: 12px;
+  position: absolute;
+  width: 100%;
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  margin: 0;
+  padding: 0;
 }
 
 .api-setting.active {
-  display: block;
+  position: relative;
+  opacity: 1;
+  height: auto;
+  margin: 1rem 0;
+  padding: 1rem;
 }
 
 /* 图片生成设置样式 */
@@ -543,4 +553,32 @@ kbd {
 
 .api-test-result.testing {
   animation: pulse 1.5s infinite;
+}
+
+/* 子部分样式 */
+.subsection {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.subsection h3 {
+  font-size: 16px;
+  margin: 0 0 16px 0;
+  color: #333;
+}
+
+/* 分隔线 */
+.subsection + .subsection {
+  margin-top: 24px;
+  border-top: 1px solid #eee;
+  padding-top: 24px;
+}
+
+/* 通知样式优化 */
+.subsection .notice {
+  background-color: #fff;
+  border-left: 4px solid #4CAF50;
+  margin-bottom: 16px;
 } 
