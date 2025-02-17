@@ -59,29 +59,43 @@
           <section class="result-section">
             <!-- 文本描述区域 -->
             <div class="result-section__text">
-              <div id="sceneDescription" class="result-card"> 
-                 
-                <!-- 最终结果显示 -->
+              <div id="sceneDescription" class="result-card">
                 <div id="result" class="result" style="display: none;"></div>
-                
-                <!-- 初始提示 -->
                 <div class="result-section__placeholder text-secondary">
                   输入单词并点击生成按钮，AI将为你创建生动的场景描述...
                 </div>
-              </div>              
+              </div>
             </div>
             
-            <!-- 图片展示区域 -->
-            <!-- <div class="result-section__image">
-              <div class="coming-soon">
-                <span class="coming-soon__badge">即将推出</span>
-                <div class="coming-soon__icon">🎨</div>
-                <div class="coming-soon__content">
-                  <p>AI 场景图像生成功能正在开发中</p>
-                  <p class="coming-soon__subtitle">我们正在努力为您带来更生动的记忆体验</p>
+            <!-- 图片区域 -->
+            <div class="result-section__image">
+              <div class="image-card">
+                <!-- 图片加载状态 -->
+                <div class="image-loading" style="display: none;">
+                  <div class="loading-spinner"></div>
+                  <div class="loading-text">生成图片中...</div>
                 </div>
+                
+                <!-- 图片内容 -->
+                <div class="image-content" style="display: none;">
+                  <img id="sceneImage" alt="场景图片" />
+                  <div class="image-controls">
+                    <button class="image-control-btn" title="重新生成">
+                      <span class="btn-icon">🔄</span>
+                    </button>
+                    <button class="image-control-btn" title="下载图片">
+                      <span class="btn-icon">💾</span>
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- 生成按钮 -->
+                <button class="generate-image-btn">
+                  <span class="btn-icon">🎨</span>
+                  <span class="btn-text">生成场景图片</span>
+                </button>
               </div>
-            </div> -->
+            </div>
           </section>
 
           <!-- 结果显示 -->

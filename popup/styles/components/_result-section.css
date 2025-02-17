@@ -4,6 +4,7 @@
   display: flex;
   min-height: 200px;
   max-height: 400px;
+  transition: all 0.3s ease;
 }
 
 /* 结果卡片通用样式 */
@@ -83,9 +84,99 @@
 
 /* 生成的图片样式 */
 .result-section__image {
-  max-width: 100%;
-  height: auto;
-  border-radius: var(--border-radius-md);
+  display: none; /* 默认隐藏 */
+  flex: 0 0 200px;
+  margin-top: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  overflow: hidden;
+}
+
+/* 图片区域 - 启用时显示 */
+.image-enabled .result-section__image {
+  display: flex;
+}
+
+/* 图片卡片容器 */
+.image-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 图片加载状态 */
+.image-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  gap: 12px;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--accent-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* 图片内容 */
+.image-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.image-content img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 图片控制按钮 */
+.image-controls {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.image-content:hover .image-controls {
+  opacity: 1;
+}
+
+/* 生成图片按钮 */
+.generate-image-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.generate-image-btn:hover {
+  background: var(--accent-color-dark);
+}
+
+/* 动画 */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* 隐藏元素 */
@@ -105,6 +196,27 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+/* 文本描述区域 - 基础样式 */
+.result-section__text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+/* 图片功能启用时的布局 */
+.image-enabled .result-section {
+  flex-direction: column;
+  max-height: 600px; /* 增加最大高度以容纳图片 */
+}
+
+.image-enabled .result-section__text {
+  flex: 1 0 200px; /* 确保文本区域有最小高度 */
+  max-height: 300px; /* 限制文本区域最大高度 */
+  overflow-y: auto;
 }
 
 /* 结果卡片基础样式 */
@@ -375,4 +487,55 @@
   to {
     transform: translate(-50%, -50%) rotate(360deg);
   }
+}
+
+/* 图片错误提示 */
+.image-error {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 59, 48, 0.9);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideUp 0.3s ease-out;
+  z-index: 10;
+}
+
+/* 错误提示动画 */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* 优化图片控制按钮样式 */
+.image-control-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-control-btn:hover {
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 } 
