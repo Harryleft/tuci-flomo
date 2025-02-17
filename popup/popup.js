@@ -10,6 +10,11 @@ class PopupManager {
     } else {
       this.initialize();
     }
+
+    this.reasoningEl = document.getElementById('reasoning');
+    this.resultEl = document.getElementById('result');
+    this.reasoningLines = [];
+    this.maxReasoningLines = 10; // 最多显示的推理行数
   }
 
   async initialize() {
@@ -43,7 +48,10 @@ class PopupManager {
         descriptionContent: '#sceneDescription',
         submitBtn: '#submitBtn',
         settingsBtn: '.header-btn[title="设置"]',
-        closeBtn: '.header-btn[title="关闭"]'
+        closeBtn: '.header-btn[title="关闭"]',
+        reasoningEl: '#reasoning',
+        resultEl: '#result',
+        reasoningContent: '.reasoning-content'
       };
 
       for (const [key, selector] of Object.entries(selectors)) {
@@ -207,40 +215,103 @@ class PopupManager {
     });
   }
 
-  async handleGenerate() {
-    const word = this.elements.wordInput.value.trim();
+  // 更新推理内容显示
+  updateReasoning(content) {
+    const { reasoningEl, resultEl, reasoningContent } = this.elements;
     
-    if (!word) {
-      this.showError('请输入要记忆的单词');
+    if (!reasoningEl || !reasoningContent) {
+      console.error('推理显示元素未找到');
       return;
     }
+    
+    if (!reasoningEl.style.display || reasoningEl.style.display === 'none') {
+      reasoningEl.style.display = 'block';
+      if (resultEl) resultEl.style.display = 'none';
+      reasoningContent.innerHTML = '';
+      this.reasoningLines = [];
+    }
 
-    // 更新生成按钮状态
-    this.updateGenerateButton(true);
+    // 将内容按句号分割
+    const newLines = content.split('。').filter(line => line.trim());
+    
+    // 更新推理行
+    newLines.forEach(line => {
+      if (!this.reasoningLines.includes(line)) {
+        this.reasoningLines.push(line);
+        
+        const lineEl = document.createElement('div');
+        lineEl.className = 'reasoning-line';
+        lineEl.textContent = line + '。';
+        reasoningContent.appendChild(lineEl);
 
+        // 如果超过最大行数，开始淡出旧的行
+        if (this.reasoningLines.length > this.maxReasoningLines) {
+          const linesToRemove = this.reasoningLines.length - this.maxReasoningLines;
+          for (let i = 0; i < linesToRemove; i++) {
+            const oldLine = reasoningContent.children[i];
+            if (oldLine) {
+              oldLine.classList.add('fading');
+              setTimeout(() => {
+                oldLine.classList.add('removing');
+                setTimeout(() => {
+                  oldLine.remove();
+                  this.reasoningLines.shift();
+                }, 500);
+              }, 1000);
+            }
+          }
+        }
+
+        // 自动滚动到底部
+        reasoningContent.scrollTop = reasoningContent.scrollHeight;
+      }
+    });
+  }
+
+  async handleGenerate() {
     try {
-      // 显示加载状态
-      this.showLoading('AI 正在为您生成场景描述...');
+      const word = this.elements.wordInput.value.trim();
+      if (!word) {
+        throw new Error('请输入单词');
+      }
+
+      this.setLoading(true);
+      
+      // 清空并显示推理区域
+      const { reasoningEl, resultEl, reasoningContent } = this.elements;
+      
+      if (reasoningEl) {
+        reasoningEl.style.display = 'block';
+        reasoningContent.innerHTML = '';  // 清空推理内容
+      }
+      
+      if (resultEl) {
+        resultEl.style.display = 'none';
+      }
+      
+      this.reasoningLines = [];
+
+      // 设置推理过程更新回调
+      APIClient.onReasoningUpdate = (content) => {
+        this.updateReasoning(content);
+      };
 
       const result = await APIClient.generateDescription(word, this.currentScene);
       
-      if (!result || !result.关键词 || !result.图像描述) {
-        throw new Error('生成的内容格式不正确');
-      }
-
-      this.currentDescription = result;
-
-      // 更新界面显示结果
-      this.showResult(result);
-      this.updateSubmitButtonState('ready');
+      // 等待最后的推理内容淡出
+      setTimeout(() => {
+        // 显示最终结果
+        if (reasoningEl) reasoningEl.style.display = 'none';
+        if (resultEl) resultEl.style.display = 'block';
+        this.displayResult(result);
+      }, 1500);
 
     } catch (error) {
       console.error('生成失败:', error);
-      this.showRetryableError(error.message || '生成失败，正在重试...');
-      this.updateSubmitButtonState('default');
+      this.showError(error.message);
     } finally {
-      // 恢复生成按钮状态
-      this.updateGenerateButton(false);
+      this.setLoading(false);
+      APIClient.onReasoningUpdate = null;
     }
   }
 
@@ -465,6 +536,16 @@ class PopupManager {
       element.textContent = '';
       this.typewriterEffect(element, text);
     }
+  }
+
+  setLoading(isLoading) {
+    this.updateGenerateButton(isLoading);
+    this.showLoading(isLoading ? 'AI 正在为您生成场景描述...' : '生成完成');
+  }
+
+  displayResult(result) {
+    this.showResult(result);
+    this.updateSubmitButtonState('ready');
   }
 }
 
