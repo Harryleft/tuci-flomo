@@ -41,7 +41,7 @@ class APIClient {
     2) Image descriptions must be reasonable, logical, engaging and have contrast
     3) The word's [Chinese meaning] must be marked in bold or enclosed in parentheses ( such as **justice** )
     4) Must strictly follow the JSON format below, with no other content
-    5) Do not output any other content, do not output any other content
+    5) Do not output any example or instruction, just output the JSON result
     6) Use emojis appropriately to add fun
     7) For words with multiple meanings (e.g. noun vs verb), describe comprehensively based on context
     8) Must strictly follow the given scene's worldview, no creating or modifying scene settings
@@ -49,6 +49,9 @@ class APIClient {
     # Scene
     1. Background: ${setting.background}
     2. Description: ${setting.description}
+    --------------
+    # Word to process
+    ${word}
     --------------
     # Format        
     {
@@ -303,7 +306,6 @@ ${defaultTag} #场景记忆`;
       }
 
       const prompt = this._buildPrompt(word, scene);
-
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), API_ENDPOINTS.VOLCENGINE.timeout);
 
@@ -328,7 +330,7 @@ ${defaultTag} #场景记忆`;
           temperature: 0.7,
           top_p: 0.95,
           max_tokens: 1024,
-          stream: true
+          stream: false
         }),
         signal: controller.signal
       };
@@ -337,83 +339,54 @@ ${defaultTag} #场景记忆`;
       clearTimeout(timeoutId);
       
       if (!response.ok) {
-        const errorData = await response.text();
-        console.error('火山云 API 响应错误:', {
+        const errorText = await response.text();
+        console.error('火山云 API 错误:', {
           status: response.status,
           statusText: response.statusText,
-          error: errorData
+          error: errorText
         });
-        throw new Error('生成描述失败，请稍后重试');
+        throw new Error(`生成描述失败: ${response.status} ${response.statusText}`);
       }
 
-      // 处理流式响应
-      const reader = response.body.getReader();
-      let reasoning = '';
-      let finalContent = '';
+      const data = await response.json();
+      console.log('火山云原始响应:', data);
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        // 解析数据
-        const chunk = new TextDecoder().decode(value);
-        const lines = chunk.split('\n').filter(line => line.trim());
-        
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const content = line.slice(6);
-            
-            // 处理结束标记
-            if (content === '[DONE]') {              
-              continue;
-            }
-
-            try {
-              const data = JSON.parse(content);
-              
-              if (data.choices?.[0]?.delta?.reasoning_content) {
-                reasoning += data.choices[0].delta.reasoning_content;
-                // 触发推理过程更新
-                this.onReasoningUpdate?.(reasoning);
-              }
-              
-              if (data.choices?.[0]?.delta?.content) {
-                finalContent += data.choices[0].delta.content;
-              }
-            } catch (parseError) {
-              console.warn('解析流式数据失败:', parseError);
-              continue;
-            }
-          }
-        }
+      // 检查火山云的响应格式
+      if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+        console.error('火山云响应格式错误:', data);
+        throw new Error('API 响应格式错误');
       }
+
+      const content = data.choices[0].message.content;
+      console.log('解析前的内容:', content);
       
       try {
-        // 清理 JSON 字符串，移除 markdown 标记和多余空白
-        const cleanContent = finalContent
-          .replace(/```json\s*\n?/g, '') // 移除 ```json 标记
-          .replace(/\n?```\s*/g, '')     // 移除结束的 ``` 标记
-          .replace(/^\s+|\s+$/g, '')     // 移除首尾空白
-          .replace(/\n\s*\n/g, '\n')     // 合并多个空行
-          .trim();
-
-        // 验证是否是有效的 JSON 格式
-        if (!cleanContent.startsWith('{') || !cleanContent.endsWith('}')) {
-          throw new Error('内容不是有效的 JSON 格式');
+        // 尝试直接解析 JSON
+        let result;
+        try {
+          result = JSON.parse(content);
+        } catch (e) {
+          // 如果直接解析失败，尝试从 markdown 中提取
+          const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || content.match(/\{[\s\S]*\}/);
+          if (!jsonMatch) {
+            throw new Error('无法找到 JSON 内容');
+          }
+          const jsonStr = jsonMatch[1] || jsonMatch[0];
+          result = JSON.parse(jsonStr);
         }
-
-        const result = JSON.parse(cleanContent);
-        // console.log('火山云解析后的结果:', result);
         
-        // 验证必要字段
+        // 验证返回的数据格式
         if (!result.英语 || !result.关键词 || !result.世界观 || !result.图像描述) {
-          throw new Error('返回数据缺少必要字段');
+          console.error('数据格式不完整:', result);
+          throw new Error('返回的数据格式不完整');
         }
-
+        
         return result;
       } catch (parseError) {
-        console.error('火山云 JSON 解析失败:', parseError);
-        console.error('清理后的内容:', cleanContent);
+        console.error('内容解析失败:', {
+          error: parseError,
+          content: content
+        });
         throw new Error('生成的内容格式不正确');
       }
     } catch (error) {
