@@ -114,7 +114,7 @@
   flex-direction: column;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 16px;
-  padding: 24px;
+  padding: 30px;
   min-height: 160px;
   box-shadow: 
     0 10px 20px rgba(0, 0, 0, 0.05),
@@ -123,19 +123,7 @@
   position: relative;
 }
 
-/* 初始状态的提示文本 */
-.result-section__placeholder {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  line-height: 1.6;
-}
-
-/* 生成后的内容容器 */
+/* 结果卡片内容 */
 .result-card__content {
   position: relative;
   z-index: 1;
@@ -143,12 +131,6 @@
   flex-direction: column;
   gap: 24px;
   width: 100%;
-  max-height: 400px;  /* 设置最大高度 */
-  overflow-y: auto;   /* 启用滚动 */
-  
-  /* Firefox 滚动条 */
-  scrollbar-width: thin;
-  scrollbar-color: #4CAF50 #f5f5f5;
 }
 
 /* Webkit 滚动条样式 */
@@ -195,7 +177,7 @@
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px);
   border-radius: 12px;
-  padding: 20px;
+  padding: 30px;
   box-shadow: 
     0 2px 8px rgba(0, 0, 0, 0.04),
     0 1px 3px rgba(0, 0, 0, 0.06);
@@ -314,12 +296,12 @@
 }
 
 /* 结果卡片内容容器 - 只在生成后显示滚动条 */
-.result-card.generated .result-card__content {
+/* .result-card.generated .result-card__content {
   max-height: 400px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #4CAF50 #f5f5f5;
-}
+} */
 
 /* 未生成状态下隐藏滚动条 */
 .result-card:not(.generated) {

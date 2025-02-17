@@ -1,36 +1,45 @@
-/* 主容器 */
+/* 主容器布局 */
 .container {
   width: 100%;
   height: 600px;  /* 设置固定高度 */
   display: flex;
   flex-direction: column;
+  overflow-x: hidden; /* 防止水平滚动 */
 }
 
-/* 内容区域 */
+/* 内容区域布局 */
 .content {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;  /* 允许内容区域收缩 */
+  width: 100%;
+  max-width: 100%; /* 限制最大宽度 */
+  overflow-x: hidden; /* 防止水平滚动 */
 }
 
-/* 侧边面板 */
+/* 侧边面板布局 */
 .side-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;  /* 允许面板收缩 */
+  width: 100%;
+  max-width: 100%; /* 限制最大宽度 */
+  overflow-x: hidden; /* 防止水平滚动 */
 }
 
-/* 主内容区域 */
+/* 主内容区域布局 */
 .side-panel__content {
   flex: 1;
   display: flex;
   flex-direction: column;
   height: calc(100% - 60px - 64px); /* 减去header和footer的高度 */
-  overflow: hidden;
+  overflow: hidden; /* 防止所有方向的滚动 */
   gap: var(--spacing-lg);
   padding: 16px 16px 0;
+  width: 100%;
+  max-width: 100%; /* 限制最大宽度 */
 }
 
 /* 输入区域容器 */
@@ -178,36 +187,6 @@
   font-size: 14px;
 }
 
-/* 结果展示区域 */
-.result-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 400px;  /* 设置最小高度 */
-  padding: var(--spacing-md);
-}
-
-/* 结果卡片 */
-.result-card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  padding: var(--spacing-lg);
-  overflow-y: auto;  /* 内容过多时可滚动 */
-}
-
-/* 结果内容 */
-.result-card__content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-  animation: slideIn 0.3s ease forwards;
-}
-
 /* 单词部分 */
 .word-section {
   text-align: center;
@@ -240,20 +219,6 @@
   line-height: 1.6;
   color: var(--text-primary);
   font-size: 14px;
-}
-
-/* 占位提示样式 */
-.result-section__placeholder {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  line-height: 1.6;
-  opacity: 0;
-  animation: fadeIn 0.3s ease forwards;
 }
 
 /* 加载状态 */
@@ -358,10 +323,6 @@
   transition: all 0.2s ease;
 }
 
-/* .btn--submit:hover::before {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-} */
 
 /* 即将推出提示样式 */
 .coming-soon {
@@ -391,19 +352,6 @@
   font-size: 12px;
   color: var(--text-secondary);
   opacity: 0.8;
-}
-
-/* 响应式调整 */
-@media (min-height: 600px) {
-  .result-section {
-    grid-template-rows: minmax(150px, auto) minmax(200px, 1fr);
-  }
-}
-
-@media (max-height: 500px) {
-  .result-section {
-    grid-template-rows: minmax(100px, auto) minmax(100px, 1fr);
-  }
 }
 
 /* 错误提示优化 */
@@ -437,11 +385,6 @@
 }
 
 /* 动画效果 */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 @keyframes pulse {
   0% { opacity: 0.6; }
   50% { opacity: 1; }
@@ -501,4 +444,38 @@
     left: 100%;
     width: 0;
   }
-} 
+}
+
+/* 滚动条样式 */
+.content::-webkit-scrollbar,
+.side-panel::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.content::-webkit-scrollbar-track,
+.side-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb,
+.side-panel::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.content::-webkit-scrollbar-thumb:hover,
+.side-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* 隐藏特定元素的滚动条 */
+.side-panel__content {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.side-panel__content::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
