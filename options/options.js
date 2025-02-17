@@ -1,4 +1,5 @@
 import ConfigManager from '/services/ConfigManager.js';
+import TestService from '/services/TestService.js';
 import ImageService from '/services/ImageService.js';
 
 // 工具函数
