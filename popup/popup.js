@@ -4,6 +4,7 @@ import ConfigManager from '../services/ConfigManager.js';
 class PopupManager {
   constructor() {
     this.elements = {};
+    this.currentDescription = null;
     
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.initialize());
@@ -48,10 +49,8 @@ class PopupManager {
         descriptionContent: '#sceneDescription',
         submitBtn: '#submitBtn',
         settingsBtn: '.header-btn[title="设置"]',
-        closeBtn: '.header-btn[title="关闭"]',
-        reasoningEl: '#reasoning',
-        resultEl: '#result',
-        reasoningContent: '.reasoning-content'
+        closeBtn: '.header-btn[title="关闭"]',        
+        resultEl: '#result',        
       };
 
       for (const [key, selector] of Object.entries(selectors)) {
@@ -283,41 +282,15 @@ class PopupManager {
 
       this.setLoading(true);
       
-      // 清空并显示推理区域
-      const { reasoningEl, resultEl, reasoningContent } = this.elements;
-      
-      if (reasoningEl) {
-        reasoningEl.style.display = 'block';
-        reasoningContent.innerHTML = '';  // 清空推理内容
-      }
-      
-      if (resultEl) {
-        resultEl.style.display = 'none';
-      }
-      
-      this.reasoningLines = [];
-
-      // 设置推理过程更新回调
-      APIClient.onReasoningUpdate = (content) => {
-        this.updateReasoning(content);
-      };
-
       const result = await APIClient.generateDescription(word, this.currentScene);
-      
-      // 等待最后的推理内容淡出
-      setTimeout(() => {
-        // 显示最终结果
-        if (reasoningEl) reasoningEl.style.display = 'none';
-        if (resultEl) resultEl.style.display = 'block';
-        this.displayResult(result);
-      }, 1500);
+      this.currentDescription = result;
+      this.displayResult(result);
 
     } catch (error) {
       console.error('生成失败:', error);
       this.showError(error.message);
     } finally {
       this.setLoading(false);
-      APIClient.onReasoningUpdate = null;
     }
   }
 
@@ -349,13 +322,6 @@ class PopupManager {
       this.updateSubmitButtonState('ready');
       this.showError(error.message || '提交失败，请重试');
     }
-  }
-
-  formatDescription(text) {
-    return text.split('\n')
-      .filter(line => line.trim())
-      .map(line => `<p>${line}</p>`)
-      .join('');
   }
 
   updateGenerateButton(isGenerating) {
@@ -504,13 +470,33 @@ class PopupManager {
     `;
   }
 
-  showResult(result) {
+  displayResult(result) {
     if (!result || typeof result !== 'object') {
       this.showError('生成的结果格式不正确');
       return;
     }
 
-    const formattedContent = `
+    const { descriptionContent, submitBtn } = this.elements;
+    if (!descriptionContent) return;
+
+    // 更新结果卡片内容
+    descriptionContent.innerHTML = this.getResultCardHTML(result);
+
+    // 添加生成完成的类
+    descriptionContent.classList.add('generated');
+
+    // 检查是否需要添加滚动条
+    this.checkScrollbars(descriptionContent);
+
+    // 启用提交按钮
+    if (submitBtn) {
+      submitBtn.disabled = false;
+    }
+  }
+
+  // 抽取结果卡片 HTML 生成逻辑
+  getResultCardHTML(result) {
+    return `
       <div class="result-card__content">
         <div class="result-card__part memory-section">
           <div class="result-card__part-title">
@@ -518,7 +504,7 @@ class PopupManager {
             <span>助记拆解</span>
           </div>
           <div class="result-card__part-content">
-            ${formatParagraphs(result.关键词 || '')}
+            ${this.formatParagraphs(result.关键词)}
           </div>
         </div>
         
@@ -528,30 +514,36 @@ class PopupManager {
             <span>场景描述</span>
           </div>
           <div class="result-card__part-content">
-            ${formatParagraphs(result.图像描述 || '')}
+            ${this.formatParagraphs(result.图像描述)}
           </div>
         </div>
       </div>
     `;
+  }
 
-    this.elements.descriptionContent.innerHTML = formattedContent;
+  // 抽取滚动条检查逻辑
+  checkScrollbars(container) {
+    const contentElements = container.querySelectorAll('.result-card__part-content');
+    contentElements.forEach(element => {
+      if (element.scrollHeight > element.clientHeight) {
+        element.classList.add('scrollable');
+      }
+    });
+  }
 
-    const elements = this.elements.descriptionContent.querySelectorAll('.typewriter-content');
-    for (const element of elements) {
-      const text = element.textContent;
-      element.textContent = '';
-      this.typewriterEffect(element, text);
-    }
+  formatParagraphs(text) {
+    if (!text) return '';
+    return text.split('\n')
+      .filter(line => line.trim())
+      .map(line => `<p>${line}</p>`)
+      .join('');
   }
 
   setLoading(isLoading) {
     this.updateGenerateButton(isLoading);
-    this.showLoading(isLoading ? 'AI 正在为您生成场景描述...' : '生成完成');
-  }
-
-  displayResult(result) {
-    this.showResult(result);
-    this.updateSubmitButtonState('ready');
+    if (isLoading) {
+      this.showLoading('AI 正在为您生成场景描述...');
+    }
   }
 }
 
@@ -573,49 +565,3 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 export default popupManager; 
-
-function updateResultCard(result) {
-  const sceneDescription = document.getElementById('sceneDescription');
-  sceneDescription.innerHTML = `
-    <div class="result-card__content">
-      <div class="result-card__part memory-section">
-        <div class="result-card__part-title">
-          <span class="result-card__part-icon">💡</span>
-          <span>助记拆解</span>
-        </div>
-        <div class="result-card__part-content">
-          ${formatParagraphs(result.关键词)}
-        </div>
-      </div>
-      
-      <div class="result-card__part scene-section">
-        <div class="result-card__part-title">
-          <span class="result-card__part-icon">🎬</span>
-          <span>场景描述</span>
-        </div>
-        <div class="result-card__part-content">
-          ${formatParagraphs(result.图像描述)}
-        </div>
-      </div>
-    </div>
-  `;
-  
-  sceneDescription.classList.add('generated');
-
-  const contentElements = sceneDescription.querySelectorAll('.result-card__part-content');
-  contentElements.forEach(element => {
-    if (element.scrollHeight > element.clientHeight) {
-      element.classList.add('scrollable');
-    }
-  });
-}
-
-function formatParagraphs(text) {
-  if (!text) {
-    return '';
-  }
-  return text.split('\n')
-    .filter(line => line.trim())
-    .map(line => `<p>${line}</p>`)
-    .join('');
-} 
