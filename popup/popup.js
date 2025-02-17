@@ -11,11 +11,6 @@ class PopupManager {
     } else {
       this.initialize();
     }
-
-    this.reasoningEl = document.getElementById('reasoning');
-    this.resultEl = document.getElementById('result');
-    this.reasoningLines = [];
-    this.maxReasoningLines = 10; // 最多显示的推理行数
   }
 
   async initialize() {
@@ -49,8 +44,7 @@ class PopupManager {
         descriptionContent: '#sceneDescription',
         submitBtn: '#submitBtn',
         settingsBtn: '.header-btn[title="设置"]',
-        closeBtn: '.header-btn[title="关闭"]',        
-        resultEl: '#result',        
+        closeBtn: '.header-btn[title="关闭"]'
       };
 
       for (const [key, selector] of Object.entries(selectors)) {
@@ -211,65 +205,6 @@ class PopupManager {
         }
       };
       type();
-    });
-  }
-
-  // 更新推理内容显示
-  updateReasoning(content) {
-    const { reasoningEl, resultEl, reasoningContent } = this.elements;
-    
-    if (!reasoningEl || !reasoningContent) {
-      console.error('推理显示元素未找到');
-      return;
-    }
-    
-    if (!reasoningEl.style.display || reasoningEl.style.display === 'none') {
-      reasoningEl.style.display = 'block';
-      if (resultEl) resultEl.style.display = 'none';
-      reasoningContent.innerHTML = '';
-      this.reasoningLines = [];
-    }
-
-    // 将内容按段落和句号分割
-    const paragraphs = content.split('\n\n').filter(p => p.trim());
-    const lastParagraph = paragraphs[paragraphs.length - 1] || '';
-    
-    // 获取新的句子
-    const sentences = lastParagraph
-      .split(/(?<=。|！|？)/) // 在句号、感叹号、问号后分割
-      .filter(sentence => sentence.trim());
-    
-    // 更新推理行
-    sentences.forEach(sentence => {
-      if (!this.reasoningLines.includes(sentence)) {
-        this.reasoningLines.push(sentence);
-        
-        const lineEl = document.createElement('div');
-        lineEl.className = 'reasoning-line';
-        lineEl.textContent = sentence;
-        reasoningContent.appendChild(lineEl);
-
-        // 如果超过最大行数，开始淡出旧的行
-        if (this.reasoningLines.length > this.maxReasoningLines) {
-          const linesToRemove = this.reasoningLines.length - this.maxReasoningLines;
-          for (let i = 0; i < linesToRemove; i++) {
-            const oldLine = reasoningContent.children[i];
-            if (oldLine) {
-              oldLine.classList.add('fading');
-              setTimeout(() => {
-                oldLine.classList.add('removing');
-                setTimeout(() => {
-                  oldLine.remove();
-                  this.reasoningLines.shift();
-                }, 500);
-              }, 1000);
-            }
-          }
-        }
-
-        // 自动滚动到底部
-        reasoningContent.scrollTop = reasoningContent.scrollHeight;
-      }
     });
   }
 
