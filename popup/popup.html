@@ -17,7 +17,6 @@
             <div class="side-panel__logo">
               <img src="../assets/Logo.png" alt="图词 Flomo Logo" class="side-panel__logo-img">
               <span class="side-panel__logo-text">
-                <!-- <span class="logo-text-main">Flomo</span>                 -->
                 <span class="logo-text-main">图词</span>
               </span>
 
@@ -54,16 +53,21 @@
                 <span class="generate-btn__icon">✨</span>
               </button>
             </div>
-          <!-- </section> -->
+          <!-- </section> -->          
 
           <!-- 结果展示区域 -->
           <section class="result-section">
             <!-- 文本描述区域 -->
             <div class="result-section__text">
-              <div id="sceneDescription" class="result-card">
+              <div id="sceneDescription" class="result-card"> 
+                 
+                <!-- 最终结果显示 -->
+                <div id="result" class="result" style="display: none;"></div>
+                
+                <!-- 初始提示 -->
                 <div class="result-section__placeholder text-secondary">
                   输入单词并点击生成按钮，AI将为你创建生动的场景描述...
-                </div>                
+                </div>
               </div>              
             </div>
             
@@ -79,6 +83,11 @@
               </div>
             </div> -->
           </section>
+
+          <!-- 结果显示 -->
+          <div id="result" class="result" style="display: none;">
+            <!-- ... existing result elements ... -->
+          </div>
         </main>
 
         <!-- 底部区域 -->

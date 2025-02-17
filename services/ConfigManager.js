@@ -18,9 +18,7 @@ class ConfigManager {
 
   static async getAPIKey() {
     try {
-      console.log('获取 API Key...');
       const result = await chrome.storage.sync.get('apiKey');
-      console.log('API Key 状态:', result.apiKey ? '已配置' : '未配置');
       return result.apiKey;
     } catch (error) {
       console.error('获取 API Key 失败:', {

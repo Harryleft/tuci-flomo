@@ -86,9 +86,7 @@ class APIClient {
   }
 
   static async generateDescription(word, scene = 'default') {
-    try {
-      console.log('开始生成描述:', { word, scene });
-
+    try {      
       // 使用火山云服务生成描述
       return await this.generateDescriptionWithVolcengine(word, scene);
 
@@ -299,15 +297,12 @@ ${defaultTag} #场景记忆`;
 
   static async generateDescriptionWithVolcengine(word, scene = 'default') {
     try {
-      console.log('开始使用火山云生成描述:', { word, scene });
-
       const apiKey = await ConfigManager.getVolcengineAPIKey();
       if (!apiKey) {
         throw new Error('请先设置火山云 API Key');
       }
 
       const prompt = this._buildPrompt(word, scene);
-      console.log('构建的火山云提示词:', prompt);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), API_ENDPOINTS.VOLCENGINE.timeout);
@@ -323,7 +318,7 @@ ${defaultTag} #场景记忆`;
           messages: [
             {
               role: 'system',
-              content: '你是一个专业的英语单词记忆助手，擅长创造生动有趣的场景来帮助记忆单词。'
+              content: '你是一个专业的英语单词记忆助手，擅长创造生动有趣的图像化场景来帮助记忆单词。'
             },
             {
               role: 'user',
@@ -333,7 +328,7 @@ ${defaultTag} #场景记忆`;
           temperature: 0.7,
           top_p: 0.95,
           max_tokens: 1024,
-          stream: true  // 启用流式输出
+          stream: true
         }),
         signal: controller.signal
       };
@@ -366,32 +361,59 @@ ${defaultTag} #场景记忆`;
         
         for (const line of lines) {
           if (line.startsWith('data: ')) {
-            const data = JSON.parse(line.slice(6));
+            const content = line.slice(6);
             
-            if (data.choices?.[0]?.delta?.reasoning_content) {
-              reasoning += data.choices[0].delta.reasoning_content;
-              // 触发推理过程更新
-              this.onReasoningUpdate?.(reasoning);
+            // 处理结束标记
+            if (content === '[DONE]') {              
+              continue;
             }
-            
-            if (data.choices?.[0]?.delta?.content) {
-              finalContent += data.choices[0].delta.content;
+
+            try {
+              const data = JSON.parse(content);
+              
+              if (data.choices?.[0]?.delta?.reasoning_content) {
+                reasoning += data.choices[0].delta.reasoning_content;
+                // 触发推理过程更新
+                this.onReasoningUpdate?.(reasoning);
+              }
+              
+              if (data.choices?.[0]?.delta?.content) {
+                finalContent += data.choices[0].delta.content;
+              }
+            } catch (parseError) {
+              console.warn('解析流式数据失败:', parseError);
+              continue;
             }
           }
         }
       }
-
-      console.log('火山云推理过程:', reasoning);
-      console.log('火山云生成的内容:', finalContent);
-
+      
       try {
-        // 清理 JSON 字符串
-        const cleanContent = finalContent.replace(/```json\n|\n```/g, '').trim();
+        // 清理 JSON 字符串，移除 markdown 标记和多余空白
+        const cleanContent = finalContent
+          .replace(/```json\s*\n?/g, '') // 移除 ```json 标记
+          .replace(/\n?```\s*/g, '')     // 移除结束的 ``` 标记
+          .replace(/^\s+|\s+$/g, '')     // 移除首尾空白
+          .replace(/\n\s*\n/g, '\n')     // 合并多个空行
+          .trim();
+
+        // 验证是否是有效的 JSON 格式
+        if (!cleanContent.startsWith('{') || !cleanContent.endsWith('}')) {
+          throw new Error('内容不是有效的 JSON 格式');
+        }
+
         const result = JSON.parse(cleanContent);
-        console.log('火山云解析后的结果:', result);
+        // console.log('火山云解析后的结果:', result);
+        
+        // 验证必要字段
+        if (!result.英语 || !result.关键词 || !result.世界观 || !result.图像描述) {
+          throw new Error('返回数据缺少必要字段');
+        }
+
         return result;
       } catch (parseError) {
         console.error('火山云 JSON 解析失败:', parseError);
+        console.error('清理后的内容:', cleanContent);
         throw new Error('生成的内容格式不正确');
       }
     } catch (error) {

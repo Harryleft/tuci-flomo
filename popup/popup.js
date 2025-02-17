@@ -231,17 +231,23 @@ class PopupManager {
       this.reasoningLines = [];
     }
 
-    // 将内容按句号分割
-    const newLines = content.split('。').filter(line => line.trim());
+    // 将内容按段落和句号分割
+    const paragraphs = content.split('\n\n').filter(p => p.trim());
+    const lastParagraph = paragraphs[paragraphs.length - 1] || '';
+    
+    // 获取新的句子
+    const sentences = lastParagraph
+      .split(/(?<=。|！|？)/) // 在句号、感叹号、问号后分割
+      .filter(sentence => sentence.trim());
     
     // 更新推理行
-    newLines.forEach(line => {
-      if (!this.reasoningLines.includes(line)) {
-        this.reasoningLines.push(line);
+    sentences.forEach(sentence => {
+      if (!this.reasoningLines.includes(sentence)) {
+        this.reasoningLines.push(sentence);
         
         const lineEl = document.createElement('div');
         lineEl.className = 'reasoning-line';
-        lineEl.textContent = line + '。';
+        lineEl.textContent = sentence;
         reasoningContent.appendChild(lineEl);
 
         // 如果超过最大行数，开始淡出旧的行
