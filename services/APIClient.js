@@ -152,20 +152,18 @@ class APIClient {
     }
   }
 
-  static async submitToFlomo(data, imageUrl = null) {
+  static async submitToFlomo(data) {
     try {
-      console.log('开始提交到 Flomo:', { data, imageUrl });
+      console.log('开始提交到 Flomo:', { data });
       
-      // 获取 Webhook URL
       const webhookUrl = await ConfigManager.getWebhookUrl();
       if (!webhookUrl) {
         throw new Error('请先设置 Flomo API');
       }
 
-      // 获取默认标签
       const defaultTag = await ConfigManager.getDefaultTag() || '#英语单词';
 
-      // 构建提交内容，添加图片支持
+      // 构建提交内容 - 移除图片相关部分
       const content = `📝 ${data.英语}
 
 ---
@@ -174,8 +172,6 @@ ${data.关键词}
 
 🌟 场景描述：
 ${data.图像描述}
-
-${imageUrl ? `\n![场景图片](${imageUrl})\n` : ''}
 
 ${defaultTag} #场景记忆`;
 

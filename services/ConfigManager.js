@@ -168,15 +168,8 @@ class ConfigManager {
   }
 
   static async getImageGenEnabled() {
-    try {
-      const result = await chrome.storage.sync.get({
-        enableImageGen: false
-      });
-      return result.enableImageGen;
-    } catch (error) {
-      console.error('获取图片生成设置失败:', error);
-      return false;
-    }
+    // 直接返回 false，禁用图片生成功能
+    return false;
   }
 
   static async getVolcengineAPIKey() {

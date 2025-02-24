@@ -64,71 +64,61 @@
           </div>
         </div>
 
-        <!-- 图片生成服务 -->
-        <div class="subsection">
-          <h3>图片生成服务（可选）</h3>
-          <div class="checkbox-group">
-            <label class="checkbox-label">
-              <input type="checkbox" id="enableImageGen" name="enableImageGen">
-              <span>启用场景图片生成</span>
-            </label>
+        <!-- 图片生成服务 - 暂时隐藏 -->
+        <div class="subsection" style="display: none;">
+          <div class="notice">
+            <span class="notice-icon">💡</span>
+            <div class="notice-content">
+              图片生成功能由智谱 GLM-4 提供支持，需要配置 GLM API Key
+            </div>
           </div>
-          
-          <div class="image-settings" style="display: none;">
-            <div class="notice">
-              <span class="notice-icon">💡</span>
-              <div class="notice-content">
-                图片生成功能由智谱 GLM-4 提供支持，需要配置 GLM API Key
-              </div>
-            </div>
 
-            <div class="form-group">
-              <label for="glmKey">智谱 GLM-4 API Key</label>
-              <input type="password" id="glmKey" class="input-full" 
-                placeholder="请输入 GLM API Key..." />
-              <div class="api-test">
-                <button class="btn-secondary test-api" data-service="glm">
-                  <span class="btn-icon">🔍</span>
-                  测试连接
-                </button>
-                <span class="api-test-result"></span>
-              </div>
-              <div class="input-hint">
-                在 <a href="https://open.bigmodel.cn/usercenter/apikeys" target="_blank">智谱AI开放平台</a> 
-                获取
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="imageSize">图片尺寸</label>
-              <select id="imageSize" class="select-full">
-                <option value="1024x1024">1024x1024 (方形)</option>
-                <option value="768x1344">768x1344 (竖版)</option>
-                <option value="1344x768">1344x768 (横版)</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="imageStyle">图片风格</label>
-              <select id="imageStyle" class="select-full">
-                <option value="realistic">写实风格</option>
-                <option value="cartoon">卡通风格</option>
-                <option value="anime">动漫风格</option>
-                <option value="oil">油画风格</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <button class="btn-secondary test-image" id="testImageGen">
-                <span class="btn-icon">🎨</span>
-                测试图片生成
+          <div class="form-group">
+            <label for="glmKey">智谱 GLM-4 API Key</label>
+            <input type="password" id="glmKey" class="input-full" 
+              placeholder="请输入 GLM API Key..." />
+            <div class="api-test">
+              <button class="btn-secondary test-api" data-service="glm">
+                <span class="btn-icon">🔍</span>
+                测试连接
               </button>
-              <div id="imagePreview" class="image-preview" style="display: none;">
-                <img id="previewImg"/>
-                <div class="preview-loading" style="display: none;">
-                  <span class="loading-icon">🔄</span>
-                  生成中...
-                </div>
+              <span class="api-test-result"></span>
+            </div>
+            <div class="input-hint">
+              在 <a href="https://open.bigmodel.cn/usercenter/apikeys" target="_blank">智谱AI开放平台</a> 
+              获取
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="imageSize">图片尺寸</label>
+            <select id="imageSize" class="select-full">
+              <option value="1024x1024">1024x1024 (方形)</option>
+              <option value="768x1344">768x1344 (竖版)</option>
+              <option value="1344x768">1344x768 (横版)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="imageStyle">图片风格</label>
+            <select id="imageStyle" class="select-full">
+              <option value="realistic">写实风格</option>
+              <option value="cartoon">卡通风格</option>
+              <option value="anime">动漫风格</option>
+              <option value="oil">油画风格</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <button class="btn-secondary test-image" id="testImageGen">
+              <span class="btn-icon">🎨</span>
+              测试图片生成
+            </button>
+            <div id="imagePreview" class="image-preview" style="display: none;">
+              <img id="previewImg"/>
+              <div class="preview-loading" style="display: none;">
+                <span class="loading-icon">🔄</span>
+                生成中...
               </div>
             </div>
           </div>
